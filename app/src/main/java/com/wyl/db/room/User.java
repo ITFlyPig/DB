@@ -5,6 +5,7 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 创建人   : yuelinwang
@@ -13,7 +14,7 @@ import java.util.ArrayList;
  */
 @Entity
 public class User {
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     public int uid;
 
     @ColumnInfo(name = "first_name")
@@ -23,8 +24,10 @@ public class User {
     public String lastName;
 
     public int anInt;
+    public byte aByte;
     public short aShort;
     public long aLong;
+    public Long bLong;
     public float aFloat;
     public double aDouble;
     public boolean aBoolean;

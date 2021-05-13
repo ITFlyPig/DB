@@ -1,8 +1,14 @@
 package com.wyl.db;
 
+import android.content.Context;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.text.TextUtils;
+import android.util.Log;
 
+import com.wyl.db.bean.User;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,16 +19,18 @@ import java.util.List;
 class WUOperationImpl implements IOperation {
     private DBManager dbManager;
 
-    public WUOperationImpl() {
-        SQLiteHelper sqLiteHelper = new SQLiteHelper(DB.context, "test.db", 1, new ISQLLite() {
+    public WUOperationImpl(Context context) {
+        SQLiteHelper sqLiteHelper = new SQLiteHelper(context, "test.db", 1, new ISQLLite() {
             @Override
             public void onCreate(SQLiteDatabase db) {
-                String createTbStr = "create table if not exists " +
-                        "user" + "(id integer primary key autoincrement, custom TEXT)";
-                try {
-                    db.execSQL(createTbStr);
-                } catch (SQLException e) {
-                    e.printStackTrace();
+               Class<?>[] entitys = DB.conf.getEntitys();
+               if (entitys == null) return;
+                for (Class<?> entity : entitys) {
+                    String sql = SQLUtil.createTableSQL(entity, DB.conf.getConverter());
+                    if (!TextUtils.isEmpty(sql)) {
+                        db.execSQL(sql);
+                        Log.d(DB.conf.getLogTag(), "创建表SQL：" + sql);
+                    }
                 }
 
             }
@@ -52,13 +60,31 @@ class WUOperationImpl implements IOperation {
     }
 
     @Override
-    public <T> List<T> query(String sql) {
-        return null;
+    public <T> int insert(List<T> entitys) {
+        return dbManager.insert(entitys);
+    }
+
+    @Override
+    public <T> List<T> query(String sql, String[] selectionArgs, Class<T> entityClz) {
+        if (TextUtils.isEmpty(sql) || entityClz == null) {
+            return new ArrayList<>(0);
+        }
+        return dbManager.query(sql, selectionArgs, entityClz);
     }
 
     @Override
     public <T> List<T> query(long id) {
         return null;
+    }
+
+    @Override
+    public <T> int delete(T entity) {
+        return dbManager.delete(entity);
+    }
+
+    @Override
+    public <T> int delete(List<T> entitys) {
+        return dbManager.delete(entitys);
     }
 
 

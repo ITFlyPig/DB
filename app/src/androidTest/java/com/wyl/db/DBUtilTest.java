@@ -1,5 +1,9 @@
 package com.wyl.db;
 
+import android.util.Log;
+
+import com.wyl.db.bean.User;
+
 import junit.framework.TestCase;
 
 /**

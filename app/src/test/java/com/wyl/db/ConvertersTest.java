@@ -12,7 +12,7 @@ import java.lang.reflect.Method;
 public class ConvertersTest extends TestCase {
 
     public void testList2String() {
-        IConverter iConverter = new Converters();
+        ITypeConverter iConverter = new TypeConverters();
         Class<?> clz = iConverter.getClass();
         Method[] methods = clz.getDeclaredMethods();
         for (Method method : methods) {

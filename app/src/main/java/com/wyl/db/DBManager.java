@@ -5,11 +5,14 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.google.gson.Gson;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.FileHandler;
 
 /**
  * 创建人   : yuelinwang
@@ -19,6 +22,8 @@ import java.util.ArrayList;
  * 1、解决SQLLite不允许多线程写的问题
  */
 public class DBManager {
+    private static final int ERROR_CODE = -1;
+    private static final int SUCCESS_CODE = 0;
     private IDBPool mDBPool;
 
     public DBManager(IDBPool mDBPool) {
@@ -32,7 +37,7 @@ public class DBManager {
      * @param <T>
      * @return
      */
-    public <T> ArrayList<T> query(String sql, String[] selectionArgs, Class<T> entityClz) {
+    public <T> List<T> query(String sql, String[] selectionArgs, Class<T> entityClz) {
         if (TextUtils.isEmpty(sql) || entityClz == null) return null;
         SQLiteDatabase database = mDBPool.borrowSQLiteDatabase();
         if (database == null) return null;
@@ -55,106 +60,150 @@ public class DBManager {
     }
 
     /**
-     * 将对象数据插入到数据库
-     *
+     * 插入到数据库
      * @param entity
      * @return
      */
     public long insert(Object entity) {
         if (entity == null) return -1;
-        // 从数据库连接池获取连接
-        SQLiteDatabase database = mDBPool.borrowSQLiteDatabase();
-        if (database == null) return -1;
-
         // 反射获取对象的值并放到ContentValues
         Class<?> clz = entity.getClass();
         Field[] fields = clz.getDeclaredFields();
         ContentValues values = new ContentValues(fields.length);
         for (Field field : fields) {
             field.setAccessible(true);
-
-            // 获取字段的注解信息
-            ColumnInfo columnInfo = field.getAnnotation(ColumnInfo.class);
-
+            // 主键
+            PrimaryKey primaryKey = field.getAnnotation(PrimaryKey.class);
             // 主键自动生成，不需要设置值
-            if (columnInfo != null && columnInfo.isPrimaryKey()) {
+            if (primaryKey != null && primaryKey.autoGenerate()) {
                 continue;
             }
-            // 通过注解获取字段对应的列名
-            String columnName = null;
-            if (columnInfo != null) {
-                columnName = columnInfo.name();
-            }
 
-            // 默认使用字段名
-            if (TextUtils.isEmpty(columnName)) {
-                columnName = field.getName();
-            }
-
-            Class<?> type = field.getType();
-
-            if (Byte.class == type || byte.class == type) {
-                Byte value = getValue(entity, field);
-                values.put(columnName, value);
-            } else if (Float.class == type || float.class == type) {
-                Float value = getValue(entity, field);
-                values.put(columnName, value);
-            } else if (Short.class == type || short.class == type) {
-                Short value = getValue(entity, field);
-                values.put(columnName, value);
-            } else if (Double.class == type || double.class == type) {
-                Double value = getValue(entity, field);
-                values.put(columnName, value);
-            } else if (String.class == type) {
-                String value = getValue(entity, field);
-                values.put(columnName, value);
-            } else if (Boolean.class == type || boolean.class == type) {
-                Boolean value = getValue(entity, field);
-                values.put(columnName, value);
-            } else if (Integer.class == type || int.class == type) {
-                Integer value = getValue(entity, field);
-                values.put(columnName, value);
-            } else if (Long.class == type || long.class == type) {
-                Long value = getValue(entity, field);
-                values.put(columnName, value);
-            } else if (isByteArr(type)) {
-                byte[] value = getValue(entity, field);
-                values.put(columnName, value);
-            } else { // 这里的类型，使用用户提供的转换器进行转换
-                Object obj = getValue(entity, field);
-                if (obj != null) {
-                    String json = new Gson().toJson(obj);
-                    values.put(columnName, json);
-                }
-
-            }
+            fillWithFieldValue(entity, values, field);
         }
 
         // 获取数据库的表名
-        String tableName = null;
-        Table table = entity.getClass().getAnnotation(Table.class);
-        if (table != null) {
-            tableName = table.name();
-        }
-
-        if (TextUtils.isEmpty(tableName)) {
-            tableName = entity.getClass().getSimpleName();
-        }
+        String tableName = ReflectionUtil.getTableName(clz);
 
         // 将数据掺入到数据库
-        return database.insert(tableName, null, values);
+        SQLiteDatabase database = mDBPool.borrowSQLiteDatabase();
+        if (database == null) return ERROR_CODE;
+        long ret = ERROR_CODE;
+        try {
+            ret = database.insert(tableName, null, values);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            mDBPool.returnSQLiteDatabase(database);
+        }
+
+        return ret;
     }
 
     /**
-     * 是否是字节数组
+     * 批量插入到数据库
      *
-     * @param clz
+     * @param entitys
      * @return
      */
-    private boolean isByteArr(Class<?> clz) {
-        if (clz == null) return false;
-        return clz.isArray() && (clz.getComponentType() == Byte.class || clz.getComponentType() == byte.class);
+    public <T> int insert(List<T> entitys) {
+        int len = entitys == null ? 0 : entitys.size();
+        if (len == 0) {
+            return SUCCESS_CODE;
+        }
 
+        SQLiteDatabase database = mDBPool.borrowSQLiteDatabase();
+        if (database == null) return ERROR_CODE;
+        boolean isSuccess = true;
+        try {
+            // 开始事务
+            database.beginTransaction();
+            // 反射获取对象的值并放到ContentValues
+            for (T entity : entitys) {
+                Class<?> clz = entity.getClass();
+                Field[] fields = clz.getDeclaredFields();
+                ContentValues values = new ContentValues(fields.length);
+                for (Field field : fields) {
+                    field.setAccessible(true);
+                    // 主键
+                    PrimaryKey primaryKey = field.getAnnotation(PrimaryKey.class);
+                    // 主键自动生成，不需要设置值
+                    if (primaryKey != null && primaryKey.autoGenerate()) {
+                        continue;
+                    }
+                    fillWithFieldValue(entity, values, field);
+                }
+
+                // 获取数据库的表名
+                String tableName = ReflectionUtil.getTableName(clz);
+                long ret = database.insert(tableName, null, values);
+                if (ret == ERROR_CODE) {
+                    isSuccess = false;
+                    break;
+                }
+            }
+
+            if (isSuccess) {
+                database.setTransactionSuccessful();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            database.endTransaction();
+            mDBPool.returnSQLiteDatabase(database);
+
+        }
+        return isSuccess ? SUCCESS_CODE : ERROR_CODE;
+
+    }
+
+    /**
+     * 获取字段的值，填充到ContentValues中
+     *
+     * @param entity
+     * @param values
+     * @param field
+     */
+    private void fillWithFieldValue(Object entity, ContentValues values, Field field) {
+        if (entity == null || values == null || field == null) return;
+        String columnName = ReflectionUtil.getColumnName(field);
+        Class<?> type = field.getType();
+        if (Byte.class == type || byte.class == type) {
+            Byte value = getValue(entity, field);
+            values.put(columnName, value);
+        } else if (Float.class == type || float.class == type) {
+            Float value = getValue(entity, field);
+            values.put(columnName, value);
+        } else if (Short.class == type || short.class == type) {
+            Short value = getValue(entity, field);
+            values.put(columnName, value);
+        } else if (Double.class == type || double.class == type) {
+            Double value = getValue(entity, field);
+            values.put(columnName, value);
+        } else if (String.class == type) {
+            String value = getValue(entity, field);
+            values.put(columnName, value);
+        } else if (Boolean.class == type || boolean.class == type) {
+            Boolean value = getValue(entity, field);
+            values.put(columnName, value);
+        } else if (Integer.class == type || int.class == type) {
+            Integer value = getValue(entity, field);
+            values.put(columnName, value);
+        } else if (Long.class == type || long.class == type) {
+            Long value = getValue(entity, field);
+            values.put(columnName, value);
+        } else if (ReflectionUtil.isByteArr(type)) {
+            byte[] value = getValue(entity, field);
+            values.put(columnName, value);
+        } else { // 这里的类型，使用用户提供的转换器进行转换
+            Object obj = getValue(entity, field);
+            if (obj != null) {
+                String json = new Gson().toJson(obj);
+                values.put(columnName, json);
+            }
+
+        }
     }
 
     /**
@@ -177,5 +226,96 @@ public class DBManager {
         return (T) value;
     }
 
+    /**
+     * 批量删除，只要有一个删除失败，那么此次操作就不会有任何删除
+     *
+     * @param entitys
+     * @param <T>
+     * @return 返回是否都删除成功
+     */
+    public <T> int delete(List<T> entitys) {
+        String tag = DB.conf.getLogTag();
+        int len = entitys == null ? 0 : entitys.size();
+        if (len == 0) {
+            return SUCCESS_CODE;
+        }
 
+        SQLiteDatabase database = mDBPool.borrowSQLiteDatabase();
+        if (database == null) {
+            Log.e(tag, "delete 操作失败：从数据库连接池获取到的连接为空，实体集合为：" + entitys);
+            return ERROR_CODE;
+        }
+        boolean isSuccess = true;
+        database.beginTransaction();
+        try {
+            for (T entity : entitys) {
+                int ret = realDelete(database, entity);
+                if (ret == ERROR_CODE) {
+                    isSuccess = false;
+                    break;
+                }
+            }
+            if (isSuccess) {
+                database.setTransactionSuccessful();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            database.endTransaction();
+        }
+
+        return isSuccess ? SUCCESS_CODE : ERROR_CODE;
+    }
+
+    /**
+     * 删除实体在表中对应的数据（必须要求实体有主键）
+     *
+     * @param entity
+     * @param <T>
+     * @return
+     */
+    public <T> int delete(T entity) {
+        SQLiteDatabase database = mDBPool.borrowSQLiteDatabase();
+        int ret = realDelete(database, entity);
+        mDBPool.returnSQLiteDatabase(database);
+        return ret;
+    }
+
+    private <T> int realDelete(SQLiteDatabase database, T entity) {
+        String tag = DB.conf.getLogTag();
+        if (database == null) {
+            Log.e(tag, "realDelete 操作失败：传入的数据库连接为空");
+            return ERROR_CODE;
+        }
+
+        if (entity == null) {
+            Log.e(tag, "delete 操作失败：传入的需要删除对象为空");
+            return ERROR_CODE;
+        }
+
+        String tableName = ReflectionUtil.getTableName(entity.getClass());
+        if (TextUtils.isEmpty(tableName)) {
+            Log.e(tag, "delete 操作失败：表名获取失败, 实体：" + entity);
+            return ERROR_CODE;
+        }
+
+        Field primaryKeyField = ReflectionUtil.getPrimaryKeyField(entity);
+        if (primaryKeyField == null) {
+            Log.e(tag, "delete 操作失败：未找到主键, 实体：" + entity);
+            return ERROR_CODE;
+        }
+
+        Object primaryKey = null;
+        try {
+            primaryKey = primaryKeyField.get(entity);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        if (primaryKey == null) {
+            Log.e(tag, "delete 操作失败：获取到的主键值为null, 实体：" + entity);
+            return ERROR_CODE;
+        }
+        // 开始删除
+        return database.delete(tableName, ReflectionUtil.getColumnName(primaryKeyField) + " = ?", new String[]{primaryKey.toString()});
+    }
 }

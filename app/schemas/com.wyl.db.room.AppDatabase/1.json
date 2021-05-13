@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "66532c00381000f938f4a3e1b6b75373",
+    "identityHash": "9aaf6ab059a77e1cb27a44c672f22d97",
     "entities": [
       {
         "tableName": "User",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uid` INTEGER NOT NULL, `first_name` TEXT, `last_name` TEXT, `anInt` INTEGER NOT NULL, `aShort` INTEGER NOT NULL, `aLong` INTEGER NOT NULL, `aFloat` REAL NOT NULL, `aDouble` REAL NOT NULL, `aBoolean` INTEGER NOT NULL, `bytes` BLOB, PRIMARY KEY(`uid`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `first_name` TEXT, `last_name` TEXT, `anInt` INTEGER NOT NULL, `aByte` INTEGER NOT NULL, `aShort` INTEGER NOT NULL, `aLong` INTEGER NOT NULL, `bLong` INTEGER, `aFloat` REAL NOT NULL, `aDouble` REAL NOT NULL, `aBoolean` INTEGER NOT NULL, `bytes` BLOB)",
         "fields": [
           {
             "fieldPath": "uid",
@@ -33,6 +33,12 @@
             "notNull": true
           },
           {
+            "fieldPath": "aByte",
+            "columnName": "aByte",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
             "fieldPath": "aShort",
             "columnName": "aShort",
             "affinity": "INTEGER",
@@ -43,6 +49,12 @@
             "columnName": "aLong",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "bLong",
+            "columnName": "bLong",
+            "affinity": "INTEGER",
+            "notNull": false
           },
           {
             "fieldPath": "aFloat",
@@ -73,7 +85,7 @@
           "columnNames": [
             "uid"
           ],
-          "autoGenerate": false
+          "autoGenerate": true
         },
         "indices": [],
         "foreignKeys": []
@@ -82,7 +94,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '66532c00381000f938f4a3e1b6b75373')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9aaf6ab059a77e1cb27a44c672f22d97')"
     ]
   }
 }

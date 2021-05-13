@@ -11,27 +11,41 @@ import android.text.TextUtils;
 public class DBConfiguration {
     private Context context;
     //数据类型的转换类
-    private IConverter converter;
+    private ITypeConverter converter;
     //数据库名
     private String dbName;
     // 数据库版本
     private int version;
     // 数据库的更新
     private ISQLLite isqlLite;
+    // 数据模型集合，会据里面的字段自动创建表
+    private Class<?>[] entitys;
+    // log TAG
+    private String logTag;
 
-    private DBConfiguration(Context context, IConverter converter, String dbName, int version, ISQLLite isqlLite) {
+    private DBConfiguration(Context context, ITypeConverter converter, String dbName, int version, ISQLLite isqlLite, Class<?>[] entitys, String logTag) {
         this.context = context;
         this.converter = converter;
         this.dbName = dbName;
         this.version = version;
         this.isqlLite = isqlLite;
+        this.entitys = entitys;
+        this.logTag = logTag;
+    }
+
+    public Class<?>[] getEntitys() {
+        return entitys;
+    }
+
+    public String getLogTag() {
+        return logTag;
     }
 
     public Context getContext() {
         return context;
     }
 
-    public IConverter getConverter() {
+    public ITypeConverter getConverter() {
         return converter;
     }
 
@@ -49,17 +63,24 @@ public class DBConfiguration {
 
     public static class Builder {
         private Context context;
-        private IConverter converter;
+        private ITypeConverter converter;
         private String dbName;
         private int version;
         private ISQLLite isqlLite;
+        private Class<?>[] entitys;
+        private String logTag;
+
+        public Builder setLogTag(String logTag) {
+            this.logTag = logTag;
+            return this;
+        }
 
         public Builder setContext(Context context) {
             this.context = context;
             return this;
         }
 
-        public Builder setConverter(IConverter converter) {
+        public Builder setConverter(ITypeConverter converter) {
             this.converter = converter;
             return this;
         }
@@ -76,6 +97,11 @@ public class DBConfiguration {
 
         public Builder setIsqlLite(ISQLLite isqlLite) {
             this.isqlLite = isqlLite;
+            return this;
+        }
+
+        public Builder setEntities(Class<?> ...entity) {
+            this.entitys = entity;
             return this;
         }
 
@@ -97,7 +123,12 @@ public class DBConfiguration {
                 throw  new IllegalArgumentException(illegalArgumentMsg);
             }
 
-            return new DBConfiguration(this.context, this.converter, this.dbName, this.version, this.isqlLite);
+            if (TextUtils.isEmpty(this.logTag)) {
+                logTag = "DB";
+
+            }
+
+            return new DBConfiguration(this.context, this.converter, this.dbName, this.version, this.isqlLite, this.entitys, this.logTag);
         }
     }
 }

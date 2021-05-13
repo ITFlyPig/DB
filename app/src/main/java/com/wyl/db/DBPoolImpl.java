@@ -27,7 +27,7 @@ public class DBPoolImpl implements IDBPool {
     private final int coreNum;
     // 最多可能的数据库连接
     private final int maxNum;
-    private final SQLiteOpenHelper sqLiteOpenHelper;
+    public static  SQLiteOpenHelper sqLiteOpenHelper;
     // 存放数据库连接
     private LinkedBlockingQueue<SQLiteDatabase> connectionQueue;
     //记录借出去的连接数
@@ -171,7 +171,7 @@ public class DBPoolImpl implements IDBPool {
 
         // 检查，避免对于同一个对象多次调用归还导致的borrowedNum不准确
         if (connectionQueue.contains(database)) return;
-        if (returnRecords.get(database.hashCode()) != null) return;
+        if (returnRecords.contains(database.hashCode())) return;
 
         borrowedNum.decrementAndGet();
 
