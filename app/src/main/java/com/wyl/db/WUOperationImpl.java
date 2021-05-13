@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.gson.internal.$Gson$Preconditions;
 import com.wyl.db.bean.User;
 
 import java.util.ArrayList;
@@ -85,6 +86,16 @@ class WUOperationImpl implements IOperation {
     @Override
     public <T> int delete(List<T> entitys) {
         return dbManager.delete(entitys);
+    }
+
+    @Override
+    public <T> long update(T entity) {
+        return dbManager.update(entity);
+    }
+
+    @Override
+    public <T> long update(T entity, String whereClause, String[] whereArgs) {
+        return dbManager.update(entity, whereClause, whereArgs);
     }
 
 

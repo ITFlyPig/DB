@@ -116,9 +116,9 @@ public class DBConfiguration {
             if (version <= 0) {
                 illegalArgumentMsg = "版本号version必须大于0";
             }
-            if (isqlLite == null) {
-                illegalArgumentMsg = "数据库创建更新实现不能为空";
-            }
+//            if (isqlLite == null) {
+//                illegalArgumentMsg = "数据库创建更新实现不能为空";
+//            }
             if (illegalArgumentMsg != null) {
                 throw  new IllegalArgumentException(illegalArgumentMsg);
             }

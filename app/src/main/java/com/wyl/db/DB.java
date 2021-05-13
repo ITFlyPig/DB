@@ -75,7 +75,27 @@ public class DB {
         return operation.delete(entitys);
     }
 
+    /**
+     * 据主键更新实体在数据库中对应的数据，注意：传入的实体必须有主键
+     * @param entity
+     * @param <T>
+     * @return
+     */
+    public static  <T> long update(T entity) {
+        return operation.update(entity);
+    }
 
+    /**
+     * 据自定义条件更新数据库，注意：此方法不要求必须有主键
+     * @param entity
+     * @param whereClause
+     * @param whereArgs
+     * @param <T>
+     * @return
+     */
+    public static  <T> long update(T entity, String whereClause, String ...whereArgs) {
+        return operation.update(entity, whereClause, whereArgs);
 
+    }
 
 }

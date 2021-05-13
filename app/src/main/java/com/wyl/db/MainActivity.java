@@ -44,9 +44,18 @@ public class MainActivity extends AppCompatActivity {
         DB.init(conf);
 
 
-        DB.insert(user);
+//        DB.insert(user);
 
-        List<User> users = DB.query(User.class,"select * from User", "");
+        user.custom = "这是更新后的额鹅鹅鹅";
+        user.id = 1;
+        user.aDouble = 100000000.0;
+        user.anInt = 88888;
+//        DB.update(user);
+        DB.update(user, "_id = ?", String.valueOf(user.id));
+
+
+        List<User> users = DB.query(User.class,"select * from User", null);
+        System.out.println(users);
 
 
 
@@ -102,17 +111,17 @@ public class MainActivity extends AppCompatActivity {
 //        insert1W(total);
 //        Log.e(TAG, "onCreate: 原始的插入1万条使用的时间" + (System.currentTimeMillis() - start));
 
-        SQLiteDatabase sqLiteDatabase1 = DBPoolImpl.sqLiteOpenHelper.getWritableDatabase();
-        SQLiteDatabase sqLiteDatabase2 = DBPoolImpl.sqLiteOpenHelper.getWritableDatabase();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                long start = System.currentTimeMillis();
-                insert1W(20000, sqLiteDatabase1);
-                Log.e(TAG, "线程1 原始的插入1万条使用的时间" + (System.currentTimeMillis() - start));
-
-            }
-        }).start();
+//        SQLiteDatabase sqLiteDatabase1 = DBPoolImpl.sqLiteOpenHelper.getWritableDatabase();
+//        SQLiteDatabase sqLiteDatabase2 = DBPoolImpl.sqLiteOpenHelper.getWritableDatabase();
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                long start = System.currentTimeMillis();
+//                insert1W(20000, sqLiteDatabase1);
+//                Log.e(TAG, "线程1 原始的插入1万条使用的时间" + (System.currentTimeMillis() - start));
+//
+//            }
+//        }).start();
 
 
 //        new Thread(new Runnable() {

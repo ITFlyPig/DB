@@ -61,28 +61,16 @@ public class DBManager {
 
     /**
      * 插入到数据库
+     *
      * @param entity
      * @return
      */
     public long insert(Object entity) {
-        if (entity == null) return -1;
+        if (entity == null) return ERROR_CODE;
         // 反射获取对象的值并放到ContentValues
-        Class<?> clz = entity.getClass();
-        Field[] fields = clz.getDeclaredFields();
-        ContentValues values = new ContentValues(fields.length);
-        for (Field field : fields) {
-            field.setAccessible(true);
-            // 主键
-            PrimaryKey primaryKey = field.getAnnotation(PrimaryKey.class);
-            // 主键自动生成，不需要设置值
-            if (primaryKey != null && primaryKey.autoGenerate()) {
-                continue;
-            }
-
-            fillWithFieldValue(entity, values, field);
-        }
-
+        ContentValues values = fillContentValues(entity);
         // 获取数据库的表名
+        Class<?> clz = entity.getClass();
         String tableName = ReflectionUtil.getTableName(clz);
 
         // 将数据掺入到数据库
@@ -98,6 +86,114 @@ public class DBManager {
         }
 
         return ret;
+    }
+
+    /**
+     * 更新
+     * @param entity
+     * @param whereClause
+     * @param whereArgs
+     * @param <T>
+     * @return
+     */
+    public<T> long update(T entity, String whereClause, String[] whereArgs) {
+        if (entity == null) return ERROR_CODE;
+        // 获取数据库的表名
+        Class<?> clz = entity.getClass();
+        String tableName = ReflectionUtil.getTableName(clz);
+
+        // 反射获取对象的值并放到ContentValues
+        ContentValues values = fillContentValues(entity);
+
+        // 更新
+        SQLiteDatabase database = mDBPool.borrowSQLiteDatabase();
+        if (database == null) return ERROR_CODE;
+        long ret = ERROR_CODE;
+        try {
+            ret = database.update(tableName, values, whereClause, whereArgs);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            mDBPool.returnSQLiteDatabase(database);
+        }
+
+        return ret;
+
+
+    }
+
+    /**
+     * 更新实体对应在数据库中的数据
+     *
+     * @param entity
+     * @param <T>
+     * @return
+     */
+    public <T> long update(T entity) {
+        if (entity == null) return ERROR_CODE;
+        String tag = DB.conf.getLogTag();
+        // 获取主键
+        Field field = ReflectionUtil.getPrimaryKeyField(entity);
+        if (field == null) {
+            Log.e(tag, "update更新操作失败：找不到主键，实体：" + entity);
+            return ERROR_CODE;
+        }
+
+        Object primaryKey = getValue(entity, field);
+        if (primaryKey == null) {
+            Log.e(tag, "update更新操作失败：获取主键值失败，实体：" + entity);
+            return ERROR_CODE;
+        }
+
+        String columnName = ReflectionUtil.getColumnName(field);
+
+        // 获取数据库的表名
+        Class<?> clz = entity.getClass();
+        String tableName = ReflectionUtil.getTableName(clz);
+
+        // 反射获取对象的值并放到ContentValues
+        ContentValues values = fillContentValues(entity);
+
+
+        // 将数据掺入到数据库
+        SQLiteDatabase database = mDBPool.borrowSQLiteDatabase();
+        if (database == null) return ERROR_CODE;
+        long ret = ERROR_CODE;
+        try {
+            ret = database.update(tableName, values, columnName + " = ?", new String[]{primaryKey.toString()});
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            mDBPool.returnSQLiteDatabase(database);
+        }
+
+        return ret;
+    }
+
+    /**
+     * 将对象的数据填充到ContentValues中
+     *
+     * @param entity
+     * @param <T>
+     * @return
+     */
+    private <T> ContentValues fillContentValues(T entity) {
+        if (entity == null) return new ContentValues();
+        Class<?> clz = entity.getClass();
+        Field[] fields = clz.getDeclaredFields();
+        ContentValues values = new ContentValues(fields.length);
+        for (Field field : fields) {
+            field.setAccessible(true);
+            // 主键
+            PrimaryKey primaryKey = field.getAnnotation(PrimaryKey.class);
+            // 主键自动生成，不需要设置值
+            if (primaryKey != null && primaryKey.autoGenerate()) {
+                continue;
+            }
+
+            fillWithFieldValue(entity, values, field);
+        }
+        return values;
     }
 
     /**
@@ -121,18 +217,7 @@ public class DBManager {
             // 反射获取对象的值并放到ContentValues
             for (T entity : entitys) {
                 Class<?> clz = entity.getClass();
-                Field[] fields = clz.getDeclaredFields();
-                ContentValues values = new ContentValues(fields.length);
-                for (Field field : fields) {
-                    field.setAccessible(true);
-                    // 主键
-                    PrimaryKey primaryKey = field.getAnnotation(PrimaryKey.class);
-                    // 主键自动生成，不需要设置值
-                    if (primaryKey != null && primaryKey.autoGenerate()) {
-                        continue;
-                    }
-                    fillWithFieldValue(entity, values, field);
-                }
+                ContentValues values = fillContentValues(entity);
 
                 // 获取数据库的表名
                 String tableName = ReflectionUtil.getTableName(clz);
