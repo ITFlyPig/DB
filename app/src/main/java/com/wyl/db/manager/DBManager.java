@@ -9,6 +9,7 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.wyl.db.DB;
 import com.wyl.db.annotations.PrimaryKey;
+import com.wyl.db.constant.Codes;
 import com.wyl.db.util.ReflectionUtil;
 
 import java.lang.reflect.Field;
@@ -18,13 +19,11 @@ import java.util.List;
 /**
  * 创建人   : yuelinwang
  * 创建时间 : 2021/5/8
- * 描述    : 提供数据库的增、删、该、查，隔离使用者与数据库（即使用者无法直接操作数据库），
- * 避免数据库连接忘关闭导致的资源泄漏。
- * 1、解决SQLLite不允许多线程写的问题
+ * 描述    : 提供数据库的增、删、该、查，隔离使用者与数据库（即使用者无法直接操作数据库）
+ * 解决：1、解决多个SQLiteOpenHelper对象同时写的问题
+ * 2、多个线程使用同一个SQLiteDatabase，但是SQLiteDatabase提前关闭导致的问题
  */
 public class DBManager {
-    private static final int ERROR_CODE = -1;
-    private static final int SUCCESS_CODE = 0;
 
     /**
      * 查询
@@ -60,7 +59,7 @@ public class DBManager {
      * @return
      */
     public long insert(Object entity) {
-        if (entity == null) return ERROR_CODE;
+        if (entity == null) return Codes.ERROR_CODE;
         // 反射获取对象的值并放到ContentValues
         ContentValues values = fillContentValues(entity);
         // 获取数据库的表名
@@ -69,8 +68,8 @@ public class DBManager {
 
         // 将数据掺入到数据库
         SQLiteDatabase database = SQLiteHelper.getInstance().getReadableDatabase();
-        if (database == null) return ERROR_CODE;
-        long ret = ERROR_CODE;
+        if (database == null) return Codes.ERROR_CODE;
+        long ret = Codes.ERROR_CODE;
         try {
             ret = database.insert(tableName, null, values);
         } catch (Exception e) {
@@ -89,7 +88,7 @@ public class DBManager {
      * @return
      */
     public <T> long update(T entity, String whereClause, String[] whereArgs) {
-        if (entity == null) return ERROR_CODE;
+        if (entity == null) return Codes.ERROR_CODE;
         // 获取数据库的表名
         Class<?> clz = entity.getClass();
         String tableName = ReflectionUtil.getTableName(clz);
@@ -99,8 +98,8 @@ public class DBManager {
 
         // 更新
         SQLiteDatabase database = SQLiteHelper.getInstance().getWritableDatabase();
-        if (database == null) return ERROR_CODE;
-        long ret = ERROR_CODE;
+        if (database == null) return Codes.ERROR_CODE;
+        long ret = Codes.ERROR_CODE;
         try {
             ret = database.update(tableName, values, whereClause, whereArgs);
         } catch (Exception e) {
@@ -119,19 +118,19 @@ public class DBManager {
      * @return
      */
     public <T> long update(T entity) {
-        if (entity == null) return ERROR_CODE;
+        if (entity == null) return Codes.ERROR_CODE;
         String tag = DB.getConf().getLogTag();
         // 获取主键
         Field field = ReflectionUtil.getPrimaryKeyField(entity);
         if (field == null) {
             Log.e(tag, "update更新操作失败：找不到主键，实体：" + entity);
-            return ERROR_CODE;
+            return Codes.ERROR_CODE;
         }
 
         Object primaryKey = getValue(entity, field);
         if (primaryKey == null) {
             Log.e(tag, "update更新操作失败：获取主键值失败，实体：" + entity);
-            return ERROR_CODE;
+            return Codes.ERROR_CODE;
         }
 
         String columnName = ReflectionUtil.getColumnName(field);
@@ -146,8 +145,8 @@ public class DBManager {
 
         // 将数据掺入到数据库
         SQLiteDatabase database = SQLiteHelper.getInstance().getWritableDatabase();
-        if (database == null) return ERROR_CODE;
-        long ret = ERROR_CODE;
+        if (database == null) return Codes.ERROR_CODE;
+        long ret = Codes.ERROR_CODE;
         try {
             ret = database.update(tableName, values, columnName + " = ?", new String[]{primaryKey.toString()});
         } catch (Exception e) {
@@ -192,11 +191,11 @@ public class DBManager {
     public <T> int insert(List<T> entitys) {
         int len = entitys == null ? 0 : entitys.size();
         if (len == 0) {
-            return SUCCESS_CODE;
+            return Codes.SUCCESS_CODE;
         }
 
         SQLiteDatabase database = SQLiteHelper.getInstance().getWritableDatabase();
-        if (database == null) return ERROR_CODE;
+        if (database == null) return Codes.ERROR_CODE;
         boolean isSuccess = true;
         try {
             // 开始事务
@@ -209,7 +208,7 @@ public class DBManager {
                 // 获取数据库的表名
                 String tableName = ReflectionUtil.getTableName(clz);
                 long ret = database.insert(tableName, null, values);
-                if (ret == ERROR_CODE) {
+                if (ret == Codes.ERROR_CODE) {
                     isSuccess = false;
                     break;
                 }
@@ -225,7 +224,7 @@ public class DBManager {
             database.endTransaction();
 
         }
-        return isSuccess ? SUCCESS_CODE : ERROR_CODE;
+        return isSuccess ? Codes.SUCCESS_CODE : Codes.ERROR_CODE;
 
     }
 
@@ -308,20 +307,20 @@ public class DBManager {
         String tag = DB.getConf().getLogTag();
         int len = entitys == null ? 0 : entitys.size();
         if (len == 0) {
-            return SUCCESS_CODE;
+            return Codes.SUCCESS_CODE;
         }
 
         SQLiteDatabase database = SQLiteHelper.getInstance().getWritableDatabase();
         if (database == null) {
             Log.e(tag, "delete 操作失败：从数据库连接池获取到的连接为空，实体集合为：" + entitys);
-            return ERROR_CODE;
+            return Codes.ERROR_CODE;
         }
         boolean isSuccess = true;
         database.beginTransaction();
         try {
             for (T entity : entitys) {
                 int ret = realDelete(database, entity);
-                if (ret == ERROR_CODE) {
+                if (ret == Codes.ERROR_CODE) {
                     isSuccess = false;
                     break;
                 }
@@ -335,7 +334,7 @@ public class DBManager {
             database.endTransaction();
         }
 
-        return isSuccess ? SUCCESS_CODE : ERROR_CODE;
+        return isSuccess ? Codes.SUCCESS_CODE : Codes.ERROR_CODE;
     }
 
     /**
@@ -354,24 +353,24 @@ public class DBManager {
         String tag = DB.getConf().getLogTag();
         if (database == null) {
             Log.e(tag, "realDelete 操作失败：传入的数据库连接为空");
-            return ERROR_CODE;
+            return Codes.ERROR_CODE;
         }
 
         if (entity == null) {
             Log.e(tag, "delete 操作失败：传入的需要删除对象为空");
-            return ERROR_CODE;
+            return Codes.ERROR_CODE;
         }
 
         String tableName = ReflectionUtil.getTableName(entity.getClass());
         if (TextUtils.isEmpty(tableName)) {
             Log.e(tag, "delete 操作失败：表名获取失败, 实体：" + entity);
-            return ERROR_CODE;
+            return Codes.ERROR_CODE;
         }
 
         Field primaryKeyField = ReflectionUtil.getPrimaryKeyField(entity);
         if (primaryKeyField == null) {
             Log.e(tag, "delete 操作失败：未找到主键, 实体：" + entity);
-            return ERROR_CODE;
+            return Codes.ERROR_CODE;
         }
 
         Object primaryKey = null;
@@ -382,7 +381,7 @@ public class DBManager {
         }
         if (primaryKey == null) {
             Log.e(tag, "delete 操作失败：获取到的主键值为null, 实体：" + entity);
-            return ERROR_CODE;
+            return Codes.ERROR_CODE;
         }
         // 开始删除
         return database.delete(tableName, ReflectionUtil.getColumnName(primaryKeyField) + " = ?", new String[]{primaryKey.toString()});

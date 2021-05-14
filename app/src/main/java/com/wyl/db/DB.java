@@ -1,5 +1,7 @@
 package com.wyl.db;
 
+import com.google.gson.internal.$Gson$Preconditions;
+import com.wyl.db.constant.Codes;
 import com.wyl.db.manager.IOperation;
 import com.wyl.db.manager.WUOperationImpl;
 
@@ -15,6 +17,8 @@ public class DB {
     private static DBConfiguration conf;
 
     private static IOperation operation;
+    //标识框架是否已初始化
+    private static volatile boolean isInit;
 
     public static void init(DBConfiguration conf) {
         DB.conf = conf;
@@ -22,8 +26,8 @@ public class DB {
             throw new IllegalArgumentException("DB.init 参数 conf 不能为空");
         }
         operation = new WUOperationImpl();
+        isInit = true;
     }
-
 
     /**
      * 插入
@@ -33,10 +37,12 @@ public class DB {
      * @return
      */
     public static <T> long insert(T bean) {
+        if (!isInit) return Codes.ERROR_CODE;
         return operation.<T>insert(bean);
     }
 
     public static <T> int insert(List<T> entitys) {
+        if (!isInit) return Codes.ERROR_CODE;
         return operation.insert(entitys);
     }
 
@@ -50,6 +56,7 @@ public class DB {
      * @return
      */
     public static <T> List<T> query(Class<T> entityClz, String sql, String... selectionArgs) {
+        if (!isInit) return null;
         return operation.<T>query(sql, selectionArgs, entityClz);
     }
 
@@ -61,38 +68,45 @@ public class DB {
      * @return
      */
     public static <T> int delete(T entity) {
+        if (!isInit) return Codes.ERROR_CODE;
         return operation.delete(entity);
     }
 
     /**
      * 批量删除，只要有一个删除失败，那么此次操作就不会有任何删除
+     *
      * @param entitys
      * @param <T>
      * @return
      */
     public static <T> int delete(List<T> entitys) {
+        if (!isInit) return Codes.ERROR_CODE;
         return operation.delete(entitys);
     }
 
     /**
      * 据主键更新实体在数据库中对应的数据，注意：传入的实体必须有主键
+     *
      * @param entity
      * @param <T>
      * @return
      */
-    public static  <T> long update(T entity) {
+    public static <T> long update(T entity) {
+        if (!isInit) return Codes.ERROR_CODE;
         return operation.update(entity);
     }
 
     /**
      * 据自定义条件更新数据库，注意：此方法不要求必须有主键
+     *
      * @param entity
      * @param whereClause
      * @param whereArgs
      * @param <T>
      * @return
      */
-    public static  <T> long update(T entity, String whereClause, String ...whereArgs) {
+    public static <T> long update(T entity, String whereClause, String... whereArgs) {
+        if (!isInit) return Codes.ERROR_CODE;
         return operation.update(entity, whereClause, whereArgs);
 
     }

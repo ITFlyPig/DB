@@ -1,5 +1,6 @@
 package com.wyl.db;
 
+import android.app.Application;
 import android.content.Context;
 import android.text.TextUtils;
 
@@ -34,6 +35,7 @@ public class DBConfiguration {
         this.isqlLite = isqlLite;
         this.entitys = entitys;
         this.logTag = logTag;
+
     }
 
     public Class<?>[] getEntitys() {

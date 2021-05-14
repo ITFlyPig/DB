@@ -18,9 +18,7 @@ public class User {
     public int id;
     @ColumnInfo(name = "_custom")
     public String custom = "";
-
     public int anInt;
-
     public short aShort;
     public byte aByte;
     public long aLong;

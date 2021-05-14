@@ -3,6 +3,7 @@ package com.wyl.db;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
@@ -39,6 +40,11 @@ public class MainActivity extends AppCompatActivity {
         user.arrayList.add("wang");
         user.arrayList.add("yue");
         user.arrayList.add("lin");
+
+
+        // 数据模型
+        DB.insert(user);
+
 
         DBConfiguration conf = new DBConfiguration.Builder()
                 .setContext(this)
@@ -82,7 +88,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void originalInsert(User user, SQLiteDatabase sqLiteDatabase) {
-
         ContentValues values = new ContentValues();
         values.put("_custom", user.custom);
         values.put("anInt", user.anInt);
@@ -95,5 +100,24 @@ public class MainActivity extends AppCompatActivity {
         values.put("arrayList", new Gson().toJson(user.arrayList));
         values.put("_map", new Gson().toJson(user.hashMap));
         sqLiteDatabase.insert("User", null, values);
+    }
+
+    private void test() {
+        ArrayList<User> users = new ArrayList<>();
+        Cursor cursor = null;
+        while (cursor.moveToNext()) {
+            User user = new User();
+            user.id = cursor.getInt(0);
+            user.custom = cursor.getString(1);
+            user.anInt = cursor.getInt(2);
+            user.aShort = cursor.getShort(3);
+            user.aByte = (byte) cursor.getInt(4);
+            user.aLong = cursor.getLong(5);
+            user.aFloat = cursor.getFloat(6);
+            user.aBytes = cursor.getBlob(7);
+            users.add(user);
+        }
+
+
     }
 }
