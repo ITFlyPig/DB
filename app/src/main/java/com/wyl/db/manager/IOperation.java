@@ -1,4 +1,4 @@
-package com.wyl.db;
+package com.wyl.db.manager;
 
 import java.util.List;
 
@@ -7,7 +7,7 @@ import java.util.List;
  * 创建时间 : 2021/5/8
  * 描述    : db操作接口
  */
-interface IOperation {
+public interface IOperation {
     /**
      * 将bean插入到数据库
      *

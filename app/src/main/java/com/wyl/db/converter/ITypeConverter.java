@@ -1,4 +1,4 @@
-package com.wyl.db;
+package com.wyl.db.converter;
 
 /**
  * 创建人   : yuelinwang

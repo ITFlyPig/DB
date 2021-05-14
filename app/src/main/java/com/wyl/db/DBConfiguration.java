@@ -3,6 +3,9 @@ package com.wyl.db;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.wyl.db.converter.ITypeConverter;
+import com.wyl.db.manager.ISQLLite;
+
 /**
  * 创建人   : yuelinwang
  * 创建时间 : 2021/5/10
@@ -116,9 +119,6 @@ public class DBConfiguration {
             if (version <= 0) {
                 illegalArgumentMsg = "版本号version必须大于0";
             }
-//            if (isqlLite == null) {
-//                illegalArgumentMsg = "数据库创建更新实现不能为空";
-//            }
             if (illegalArgumentMsg != null) {
                 throw  new IllegalArgumentException(illegalArgumentMsg);
             }

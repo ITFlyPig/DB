@@ -1,5 +1,8 @@
 package com.wyl.db;
 
+import com.wyl.db.converter.ITypeConverter;
+import com.wyl.db.converter.TypeConverters;
+
 import junit.framework.TestCase;
 
 import java.lang.reflect.Method;

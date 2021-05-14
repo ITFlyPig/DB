@@ -1,6 +1,9 @@
-package com.wyl.db;
+package com.wyl.db.util;
 
 import android.text.TextUtils;
+
+import com.wyl.db.converter.ITypeConverter;
+import com.wyl.db.annotations.PrimaryKey;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -11,7 +14,7 @@ import java.lang.reflect.Type;
  * 创建时间 : 2021/5/11
  * 描述    : SQL工具
  */
-class SQLUtil {
+public class SQLUtil {
 
     /**
      * 返回实体对应的创建语句

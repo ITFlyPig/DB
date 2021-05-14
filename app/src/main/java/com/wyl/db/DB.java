@@ -1,9 +1,8 @@
 package com.wyl.db;
 
-import android.content.Context;
-import android.text.TextUtils;
+import com.wyl.db.manager.IOperation;
+import com.wyl.db.manager.WUOperationImpl;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,7 +12,7 @@ import java.util.List;
  */
 public class DB {
     // 配置，对使用者不可见，包可见，方便直接引用
-    static DBConfiguration conf;
+    private static DBConfiguration conf;
 
     private static IOperation operation;
 
@@ -22,7 +21,7 @@ public class DB {
         if (conf == null) {
             throw new IllegalArgumentException("DB.init 参数 conf 不能为空");
         }
-        operation = new WUOperationImpl(conf.getContext());
+        operation = new WUOperationImpl();
     }
 
 
@@ -98,4 +97,7 @@ public class DB {
 
     }
 
+    public static DBConfiguration getConf() {
+        return conf;
+    }
 }

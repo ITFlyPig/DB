@@ -1,18 +1,19 @@
-package com.wyl.db;
+package com.wyl.db.manager;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.wyl.db.DB;
+import com.wyl.db.annotations.PrimaryKey;
+import com.wyl.db.util.ReflectionUtil;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.FileHandler;
 
 /**
  * 创建人   : yuelinwang
@@ -24,11 +25,6 @@ import java.util.logging.FileHandler;
 public class DBManager {
     private static final int ERROR_CODE = -1;
     private static final int SUCCESS_CODE = 0;
-    private IDBPool mDBPool;
-
-    public DBManager(IDBPool mDBPool) {
-        this.mDBPool = mDBPool;
-    }
 
     /**
      * 查询
@@ -39,7 +35,7 @@ public class DBManager {
      */
     public <T> List<T> query(String sql, String[] selectionArgs, Class<T> entityClz) {
         if (TextUtils.isEmpty(sql) || entityClz == null) return null;
-        SQLiteDatabase database = mDBPool.borrowSQLiteDatabase();
+        SQLiteDatabase database = SQLiteHelper.getInstance().getReadableDatabase();
         if (database == null) return null;
         // 数据库查询
         Cursor cursor = null;
@@ -53,8 +49,6 @@ public class DBManager {
             if (cursor != null && !cursor.isClosed()) {
                 cursor.close();
             }
-            // 将使用到数据库连接放回连接池
-            mDBPool.returnSQLiteDatabase(database);
         }
         return data;
     }
@@ -74,29 +68,27 @@ public class DBManager {
         String tableName = ReflectionUtil.getTableName(clz);
 
         // 将数据掺入到数据库
-        SQLiteDatabase database = mDBPool.borrowSQLiteDatabase();
+        SQLiteDatabase database = SQLiteHelper.getInstance().getReadableDatabase();
         if (database == null) return ERROR_CODE;
         long ret = ERROR_CODE;
         try {
             ret = database.insert(tableName, null, values);
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            mDBPool.returnSQLiteDatabase(database);
         }
-
         return ret;
     }
 
     /**
      * 更新
+     *
      * @param entity
      * @param whereClause
      * @param whereArgs
      * @param <T>
      * @return
      */
-    public<T> long update(T entity, String whereClause, String[] whereArgs) {
+    public <T> long update(T entity, String whereClause, String[] whereArgs) {
         if (entity == null) return ERROR_CODE;
         // 获取数据库的表名
         Class<?> clz = entity.getClass();
@@ -106,17 +98,14 @@ public class DBManager {
         ContentValues values = fillContentValues(entity);
 
         // 更新
-        SQLiteDatabase database = mDBPool.borrowSQLiteDatabase();
+        SQLiteDatabase database = SQLiteHelper.getInstance().getWritableDatabase();
         if (database == null) return ERROR_CODE;
         long ret = ERROR_CODE;
         try {
             ret = database.update(tableName, values, whereClause, whereArgs);
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            mDBPool.returnSQLiteDatabase(database);
         }
-
         return ret;
 
 
@@ -131,7 +120,7 @@ public class DBManager {
      */
     public <T> long update(T entity) {
         if (entity == null) return ERROR_CODE;
-        String tag = DB.conf.getLogTag();
+        String tag = DB.getConf().getLogTag();
         // 获取主键
         Field field = ReflectionUtil.getPrimaryKeyField(entity);
         if (field == null) {
@@ -156,15 +145,13 @@ public class DBManager {
 
 
         // 将数据掺入到数据库
-        SQLiteDatabase database = mDBPool.borrowSQLiteDatabase();
+        SQLiteDatabase database = SQLiteHelper.getInstance().getWritableDatabase();
         if (database == null) return ERROR_CODE;
         long ret = ERROR_CODE;
         try {
             ret = database.update(tableName, values, columnName + " = ?", new String[]{primaryKey.toString()});
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            mDBPool.returnSQLiteDatabase(database);
         }
 
         return ret;
@@ -208,7 +195,7 @@ public class DBManager {
             return SUCCESS_CODE;
         }
 
-        SQLiteDatabase database = mDBPool.borrowSQLiteDatabase();
+        SQLiteDatabase database = SQLiteHelper.getInstance().getWritableDatabase();
         if (database == null) return ERROR_CODE;
         boolean isSuccess = true;
         try {
@@ -236,7 +223,6 @@ public class DBManager {
             e.printStackTrace();
         } finally {
             database.endTransaction();
-            mDBPool.returnSQLiteDatabase(database);
 
         }
         return isSuccess ? SUCCESS_CODE : ERROR_CODE;
@@ -319,13 +305,13 @@ public class DBManager {
      * @return 返回是否都删除成功
      */
     public <T> int delete(List<T> entitys) {
-        String tag = DB.conf.getLogTag();
+        String tag = DB.getConf().getLogTag();
         int len = entitys == null ? 0 : entitys.size();
         if (len == 0) {
             return SUCCESS_CODE;
         }
 
-        SQLiteDatabase database = mDBPool.borrowSQLiteDatabase();
+        SQLiteDatabase database = SQLiteHelper.getInstance().getWritableDatabase();
         if (database == null) {
             Log.e(tag, "delete 操作失败：从数据库连接池获取到的连接为空，实体集合为：" + entitys);
             return ERROR_CODE;
@@ -360,14 +346,12 @@ public class DBManager {
      * @return
      */
     public <T> int delete(T entity) {
-        SQLiteDatabase database = mDBPool.borrowSQLiteDatabase();
-        int ret = realDelete(database, entity);
-        mDBPool.returnSQLiteDatabase(database);
-        return ret;
+        SQLiteDatabase database = SQLiteHelper.getInstance().getWritableDatabase();
+        return realDelete(database, entity);
     }
 
     private <T> int realDelete(SQLiteDatabase database, T entity) {
-        String tag = DB.conf.getLogTag();
+        String tag = DB.getConf().getLogTag();
         if (database == null) {
             Log.e(tag, "realDelete 操作失败：传入的数据库连接为空");
             return ERROR_CODE;

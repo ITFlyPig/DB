@@ -1,7 +1,7 @@
 package com.wyl.db.bean;
 
-import com.wyl.db.ColumnInfo;
-import com.wyl.db.PrimaryKey;
+import com.wyl.db.annotations.ColumnInfo;
+import com.wyl.db.annotations.PrimaryKey;
 
 import java.util.ArrayList;
 import java.util.Arrays;

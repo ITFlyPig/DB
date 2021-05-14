@@ -9,6 +9,8 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.wyl.db.bean.User;
+import com.wyl.db.converter.TypeConverters;
+import com.wyl.db.manager.SQLiteHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +31,10 @@ public class MainActivity extends AppCompatActivity {
         user.aLong = 0;
         user.aFloat = 0;
         user.aDouble = 0;
+        user.custom = "这是更新后的额鹅鹅鹅";
+        user.id = 1;
+        user.aDouble = 100000000.0;
+        user.anInt = 88888;
         user.arrayList = new ArrayList<>();
         user.arrayList.add("wang");
         user.arrayList.add("yue");
@@ -41,98 +47,18 @@ public class MainActivity extends AppCompatActivity {
                 .setConverter(new TypeConverters())
                 .setEntities(User.class)
                 .build();
+
         DB.init(conf);
-
-
-//        DB.insert(user);
-
-        user.custom = "这是更新后的额鹅鹅鹅";
-        user.id = 1;
-        user.aDouble = 100000000.0;
-        user.anInt = 88888;
-//        DB.update(user);
-        DB.update(user, "_id = ?", String.valueOf(user.id));
 
 
         List<User> users = DB.query(User.class,"select * from User", null);
         System.out.println(users);
 
+        long start  = System.currentTimeMillis();
 
+        insert1W(20000, SQLiteHelper.getInstance().getWritableDatabase());
 
-
-        int total = 10000;
-        long start = System.currentTimeMillis();
-//        for (int i = 0; i < total; i++) {
-//            User user = new User();
-//            user.custom = "额鹅鹅鹅" + i;
-//            user.aByte = 0;
-//            user.aShort = 0;
-//            user.anInt = 0;
-//            user.aLong = 0;
-//            user.aFloat = 0;
-//            user.aDouble = 0;
-//            user.arrayList = new ArrayList<>();
-//            user.arrayList.add("wang");
-//            user.arrayList.add("yue");
-//            user.arrayList.add("lin");
-//            DB.insert(user);
-//        }
-//        Log.e(TAG, "onCreate: 插入1万条使用的时间" + (System.currentTimeMillis() - start));
-
-//        start = System.currentTimeMillis();
-//
-//        ArrayList<User> users = new ArrayList<>(total);
-//        for (int i = 0; i < total; i++) {
-//            User user = new User();
-//            user.custom = "额鹅鹅鹅" + i;
-//            user.aByte = 0;
-//            user.aShort = 0;
-//            user.anInt = 0;
-//            user.aLong = 0;
-//            user.aFloat = 0;
-//            user.aDouble = 0;
-//            user.arrayList = new ArrayList<>();
-//            user.arrayList.add("wang");
-//            user.arrayList.add("yue");
-//            user.arrayList.add("lin");
-//            users.add(user);
-//        }
-//        DB.insert(users);
-//        Log.e(TAG, "onCreate: 批量插入1万条使用的时间" + (System.currentTimeMillis() - start));
-
-//        DB.insert(user);
-
-//        List<User> users = DB.query(User.class,"select * from User", null);
-
-//        DB.delete(users.get(0));
-
-
-//        start = System.currentTimeMillis();
-//        insert1W(total);
-//        Log.e(TAG, "onCreate: 原始的插入1万条使用的时间" + (System.currentTimeMillis() - start));
-
-//        SQLiteDatabase sqLiteDatabase1 = DBPoolImpl.sqLiteOpenHelper.getWritableDatabase();
-//        SQLiteDatabase sqLiteDatabase2 = DBPoolImpl.sqLiteOpenHelper.getWritableDatabase();
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                long start = System.currentTimeMillis();
-//                insert1W(20000, sqLiteDatabase1);
-//                Log.e(TAG, "线程1 原始的插入1万条使用的时间" + (System.currentTimeMillis() - start));
-//
-//            }
-//        }).start();
-
-
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                long start = System.currentTimeMillis();
-//                insert1W(total, sqLiteDatabase1);
-//                Log.e(TAG, "线程2 原始的插入1万条使用的时间" + (System.currentTimeMillis() - start));
-//
-//            }
-//        }).start();
+        Log.e(TAG, "框架方式插入2w耗时：" + (System.currentTimeMillis() - start));
     }
 
     private void insert1W(int total, SQLiteDatabase sqLiteDatabase) {
@@ -150,7 +76,8 @@ public class MainActivity extends AppCompatActivity {
             user.arrayList.add("wang");
             user.arrayList.add("yue");
             user.arrayList.add("lin");
-            originalInsert(user, sqLiteDatabase);
+//            originalInsert(user, sqLiteDatabase);
+            DB.insert(user);
         }
     }
 

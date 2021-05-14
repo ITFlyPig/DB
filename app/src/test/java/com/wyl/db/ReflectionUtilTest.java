@@ -1,6 +1,7 @@
 package com.wyl.db;
 
 import com.wyl.db.bean.User;
+import com.wyl.db.util.ReflectionUtil;
 
 import junit.framework.TestCase;
 

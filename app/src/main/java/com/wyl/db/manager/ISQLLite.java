@@ -1,4 +1,4 @@
-package com.wyl.db;
+package com.wyl.db.manager;
 
 import android.database.sqlite.SQLiteDatabase;
 

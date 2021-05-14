@@ -1,4 +1,4 @@
-package com.wyl.db;
+package com.wyl.db.converter;
 
 import com.google.gson.Gson;
 import com.wyl.db.bean.User;

@@ -1,7 +1,8 @@
-package com.wyl.db;
+package com.wyl.db.converter;
+
+import com.wyl.db.DB;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 
 /**
  * 创建人   : yuelinwang
@@ -12,7 +13,7 @@ public class TypeConverterUtil {
     public static Class<?> findByType(Class<?> in) {
         if (in == null) return null;
         // 获取类型转换器
-        ITypeConverter converter = DB.conf.getConverter();
+        ITypeConverter converter = DB.getConf().getConverter();
         if (converter == null) return null;
 
         Method[] methods = converter.getClass().getMethods();

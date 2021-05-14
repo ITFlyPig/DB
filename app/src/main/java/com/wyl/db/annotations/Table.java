@@ -1,4 +1,4 @@
-package com.wyl.db;
+package com.wyl.db.annotations;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -15,18 +15,12 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
 @Documented
-public @interface ColumnInfo {
+public @interface Table {
     /**
      * 列的名字
      *
      * @return
      */
     String name() default "";
-
-    /**
-     * 是否是主键
-     * @return
-     */
-    boolean isPrimaryKey() default false;
 
 }

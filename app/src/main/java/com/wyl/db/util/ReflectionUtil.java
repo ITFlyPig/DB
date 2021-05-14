@@ -1,8 +1,14 @@
-package com.wyl.db;
+package com.wyl.db.util;
 
 import android.database.Cursor;
 import android.text.TextUtils;
 import android.util.Log;
+
+import com.wyl.db.annotations.ColumnInfo;
+import com.wyl.db.DB;
+import com.wyl.db.converter.ITypeConverter;
+import com.wyl.db.annotations.PrimaryKey;
+import com.wyl.db.annotations.Table;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
@@ -239,9 +245,9 @@ public class ReflectionUtil {
      */
     private static void fillComplexField(Field field, Object obj, Object value) throws InvocationTargetException, IllegalAccessException {
         if (field == null || obj == null || value == null) return;
-        String tag = DB.conf.getLogTag();
+        String tag = DB.getConf().getLogTag();
         Type type = field.getGenericType();
-        ITypeConverter converter = DB.conf.getConverter();
+        ITypeConverter converter = DB.getConf().getConverter();
         if (converter != null) {
             Method method = ReflectionUtil.findByReturnAndParamType(converter.getClass(), type, value.getClass());
             if (method != null) {

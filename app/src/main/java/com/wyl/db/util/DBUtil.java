@@ -1,4 +1,4 @@
-package com.wyl.db;
+package com.wyl.db.util;
 
 import android.text.TextUtils;
 
@@ -68,22 +68,4 @@ public class DBUtil {
         return builder.toString();
     }
 
-    /**
-     * 将类名转为对应的表名
-     * @param className
-     * @return
-     */
-    public static String className2Table(String className) {
-        return field2Column(className);
-
-    }
-
-    /**
-     * 将表名转为对应的类名
-     * @param tableName
-     * @return
-     */
-    public static String table2ClassName(String tableName) {
-        return column2Field(tableName);
-    }
 }
