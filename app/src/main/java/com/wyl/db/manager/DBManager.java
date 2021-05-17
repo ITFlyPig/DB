@@ -266,7 +266,7 @@ public class DBManager {
         } else if (ReflectionUtil.isByteArr(type)) {
             byte[] value = getValue(entity, field);
             values.put(columnName, value);
-        } else { // 这里的类型，使用用户提供的转换器进行转换
+        } else { //TODO 这里的类型，使用用户提供的转换器进行转换
             Object obj = getValue(entity, field);
             if (obj != null) {
                 String json = new Gson().toJson(obj);

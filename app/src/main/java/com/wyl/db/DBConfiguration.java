@@ -1,6 +1,5 @@
 package com.wyl.db;
 
-import android.app.Application;
 import android.content.Context;
 import android.text.TextUtils;
 
