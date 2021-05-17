@@ -59,12 +59,14 @@ public class MainActivity extends AppCompatActivity {
 
 //        List<User> users = DB.query(User.class,"select * from User", null);
 //        System.out.println(users);
+//
+//        long start  = System.currentTimeMillis();
+//
+//        insertW(20000, SQLiteHelper.getInstance().getWritableDatabase());
+//
+//        Log.e(TAG, "框架方式插入2w耗时：" + (System.currentTimeMillis() - start));
 
-        long start  = System.currentTimeMillis();
-
-        insertW(20000, SQLiteHelper.getInstance().getWritableDatabase());
-
-        Log.e(TAG, "框架方式插入2w耗时：" + (System.currentTimeMillis() - start));
+        Log.e(TAG, "queryById: " + DB.queryById(100, User.class));
     }
 
     private void insertW(int total, SQLiteDatabase sqLiteDatabase) {

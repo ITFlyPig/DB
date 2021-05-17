@@ -100,7 +100,7 @@ public class ReflectionUtil {
             //取出一行的所有数据
             int count = cursor.getColumnCount();
             for (int i = 0; i < count; i++) {
-                // 将游标中取出来的数据填充到对应字段
+                // 将游标中columnIndex对应的值取出来的数据填充到对象对应字段
                 setField(cursor, fieldsMap, obj, i);
             }
             data.add(obj);
@@ -161,22 +161,16 @@ public class ReflectionUtil {
         if (field == null || obj == null) return;
         Class<?> type = field.getType();
         try {
-            if (type == byte.class) {
+            if (type == byte.class || type == Byte.class) {
                 field.setByte(obj, (byte) value);
-            } else if (type == Byte.class) {
-                field.set(obj, (byte) value);
-            } else if (type == short.class) {
+            } else if (type == short.class || type == Short.class) {
                 field.setShort(obj, (short) value);
-            } else if (type == Short.class) {
-                field.set(obj, (short) value);
-            } else if (type == int.class) {
+            } else if (type == int.class || type == Integer.class) {
                 field.setInt(obj, (int) value);
-            } else if (type == Integer.class) {
-                field.set(obj, (int) value);
-            } else if (type == long.class) {
+            } else if (type == long.class || type == Long.class) {
                 field.setLong(obj, (long) value);
-            } else if (type == Long.class) {
-                field.set(obj, (long) value);
+            } else if (type == boolean.class || type == Boolean.class) {
+                field.set(obj, value == 1);
             } else {
                 fillComplexField(field, obj, value);
             }
@@ -511,7 +505,18 @@ public class ReflectionUtil {
      */
     public static Field getPrimaryKeyField(Object obj) {
         if (obj == null) return null;
-        Field[] fields = obj.getClass().getDeclaredFields();
+        return getPrimaryKeyField(obj.getClass());
+    }
+
+    /**
+     * 获取主键
+     *
+     * @param clz
+     * @return
+     */
+    public static Field getPrimaryKeyField(Class<?> clz) {
+        if (clz == null) return null;
+        Field[] fields = clz.getDeclaredFields();
         for (Field field : fields) {
             PrimaryKey primaryKey = field.getAnnotation(PrimaryKey.class);
             if (primaryKey != null) {

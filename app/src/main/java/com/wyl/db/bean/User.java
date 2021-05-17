@@ -26,7 +26,7 @@ public class User {
     public float aFloat;
     public byte[] aBytes;
     public Long aaLong = 0L;
-    public boolean aBoolean = true;
+    public boolean aBoolean = false;
 
     public ArrayList<String> arrayList = new ArrayList<>();
 
@@ -49,6 +49,7 @@ public class User {
                 ", aaLong=" + aaLong +
                 ", arrayList=" + arrayList +
                 ", hashMap=" + hashMap +
+                ", aBoolean=" + aBoolean +
                 '}';
     }
 }

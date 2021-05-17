@@ -42,7 +42,7 @@ public interface IOperation {
      * @param <T>
      * @return
      */
-    <T> List<T> query(long id);
+    <T> T query(long id, Class<T> entityClz);
 
     /**
      * 删除
@@ -64,6 +64,7 @@ public interface IOperation {
 
     /**
      * 据主键更新实体在数据库中对应的数据
+     *
      * @param entity
      * @param <T>
      * @return
@@ -72,6 +73,7 @@ public interface IOperation {
 
     /**
      * 据自定义的条件更新数据库中的数据
+     *
      * @param entity
      * @param whereClause
      * @param whereArgs

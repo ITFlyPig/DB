@@ -61,6 +61,19 @@ public class DB {
     }
 
     /**
+     * 据id查询对应的实体
+     * @param id
+     * @param <T>
+     * @return
+     */
+    public static <T> T queryById(long id, Class<T> entityClz) {
+        if (!isInit) return null;
+        return operation.query(id, entityClz);
+
+
+    }
+
+    /**
      * 删除实体对应的表中的记录，注意：实体必须有主键才能使用这个方法
      *
      * @param entity

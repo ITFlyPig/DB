@@ -245,14 +245,13 @@ public class DBManager {
             for (T entity : entitys) {
                 // 记录该对象的字段及对应的值
                 ContentValues valuesTemp = fillContentValues(entity);
-                statement.clearBindings();
                 if (valuesTemp == null) continue;
+                statement.clearBindings();
                 // ContentValues -> sql
                 for (int j = 0; j < args.length; j++) {
                     Object v = valuesTemp.get(args[j]);
                     // 数据的绑定
                     bind(statement, j + 1, v);
-
                 }
                 // 检查是否失败
                 ret = statement.executeInsert();
