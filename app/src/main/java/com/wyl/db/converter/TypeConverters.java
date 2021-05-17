@@ -14,7 +14,7 @@ import java.util.HashMap;
 public class TypeConverters implements ITypeConverter {
 
     public String convert(ArrayList<String> arrayList) {
-        return new Gson().toJson(arrayList);
+        return "将arrayList转为String";
     }
 
     public ArrayList<String> convert(String s) {

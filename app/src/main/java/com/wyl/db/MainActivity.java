@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         // 数据模型
-        DB.insert(user);
+//        DB.insert(user);
 
 
         DBConfiguration conf = new DBConfiguration.Builder()
@@ -57,17 +57,18 @@ public class MainActivity extends AppCompatActivity {
         DB.init(conf);
 
 
-        List<User> users = DB.query(User.class,"select * from User", null);
-        System.out.println(users);
+//        List<User> users = DB.query(User.class,"select * from User", null);
+//        System.out.println(users);
 
         long start  = System.currentTimeMillis();
 
-        insert1W(20000, SQLiteHelper.getInstance().getWritableDatabase());
+        insertW(20000, SQLiteHelper.getInstance().getWritableDatabase());
 
         Log.e(TAG, "框架方式插入2w耗时：" + (System.currentTimeMillis() - start));
     }
 
-    private void insert1W(int total, SQLiteDatabase sqLiteDatabase) {
+    private void insertW(int total, SQLiteDatabase sqLiteDatabase) {
+        ArrayList<User> users = new ArrayList<>(total);
         //原始的插入方式
         for (int i = 0; i < total; i++) {
             User user = new User();
@@ -82,9 +83,12 @@ public class MainActivity extends AppCompatActivity {
             user.arrayList.add("wang");
             user.arrayList.add("yue");
             user.arrayList.add("lin");
+            user.aBytes = new byte[]{1,2,1};
+            users.add(user);
 //            originalInsert(user, sqLiteDatabase);
-            DB.insert(user);
+//            DB.insert(user);
         }
+        DB.insert(users);
     }
 
     private void originalInsert(User user, SQLiteDatabase sqLiteDatabase) {

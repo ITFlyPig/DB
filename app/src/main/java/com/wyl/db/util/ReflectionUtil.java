@@ -288,7 +288,7 @@ public class ReflectionUtil {
      * @param clz
      * @return
      */
-    private static HashMap<String, Field> getFields(Class<?> clz) {
+    public static HashMap<String, Field> getFields(Class<?> clz) {
         Field[] fields = clz.getDeclaredFields();
         HashMap<String, Field> fieldsMap = new HashMap<>(fields.length);
         for (Field field : fields) {

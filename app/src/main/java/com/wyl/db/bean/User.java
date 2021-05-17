@@ -26,6 +26,7 @@ public class User {
     public float aFloat;
     public byte[] aBytes;
     public Long aaLong = 0L;
+    public boolean aBoolean = true;
 
     public ArrayList<String> arrayList = new ArrayList<>();
 
