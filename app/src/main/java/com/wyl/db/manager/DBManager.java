@@ -150,7 +150,6 @@ public class DBManager {
         // 反射获取对象的值并放到ContentValues
         ContentValues values = fillContentValues(entity);
 
-
         // 将数据掺入到数据库
         SQLiteDatabase database = SQLiteHelper.getInstance().getWritableDatabase();
         if (database == null) return Codes.ERROR_CODE;
