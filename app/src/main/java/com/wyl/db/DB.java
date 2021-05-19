@@ -1,6 +1,5 @@
 package com.wyl.db;
 
-import com.google.gson.internal.$Gson$Preconditions;
 import com.wyl.db.constant.Codes;
 import com.wyl.db.manager.IOperation;
 import com.wyl.db.manager.WUOperationImpl;
@@ -30,7 +29,7 @@ public class DB {
     }
 
     /**
-     * 插入
+     * 插入单个对象
      *
      * @param bean
      * @param <T>
@@ -41,6 +40,12 @@ public class DB {
         return operation.<T>insert(bean);
     }
 
+    /**
+     * 插入对象集合，注意：该方法启动了事务，只要有插入失败的，就不会插入到数据库中
+     * @param entitys
+     * @param <T>
+     * @return
+     */
     public static <T> int insert(List<T> entitys) {
         if (!isInit) return Codes.ERROR_CODE;
         return operation.insert(entitys);
