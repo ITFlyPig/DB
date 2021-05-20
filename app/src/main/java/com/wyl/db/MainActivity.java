@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.wyl.crash.Crash;
 import com.wyl.db.bean.User;
 import com.wyl.db.converter.TypeConverters;
 import com.wyl.db.manager.SQLiteHelper;
@@ -24,49 +25,51 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        User user = new User();
-        user.custom = "额鹅鹅鹅";
-        user.aByte = 0;
-        user.aShort = 0;
-        user.anInt = 0;
-        user.aLong = 0;
-        user.aFloat = 0;
-        user.aDouble = 0;
-        user.custom = "这是更新后的额鹅鹅鹅";
-        user.id = 1;
-        user.aDouble = 100000000.0;
-        user.anInt = 88888;
-        user.arrayList = new ArrayList<>();
-        user.arrayList.add("wang");
-        user.arrayList.add("yue");
-        user.arrayList.add("lin");
-
-
-        // 数据模型
-//        DB.insert(user);
-
-
-        DBConfiguration conf = new DBConfiguration.Builder()
-                .setContext(this)
-                .setDbName("test.db")
-                .setVersion(1)
-                .setConverter(new TypeConverters())
-                .setEntities(User.class)
-                .build();
-
-        DB.init(conf);
-
-
-//        List<User> users = DB.query(User.class,"select * from User", null);
-//        System.out.println(users);
+//        User user = new User();
+//        user.custom = "额鹅鹅鹅";
+//        user.aByte = 0;
+//        user.aShort = 0;
+//        user.anInt = 0;
+//        user.aLong = 0;
+//        user.aFloat = 0;
+//        user.aDouble = 0;
+//        user.custom = "这是更新后的额鹅鹅鹅";
+//        user.id = 1;
+//        user.aDouble = 100000000.0;
+//        user.anInt = 88888;
+//        user.arrayList = new ArrayList<>();
+//        user.arrayList.add("wang");
+//        user.arrayList.add("yue");
+//        user.arrayList.add("lin");
 //
-//        long start  = System.currentTimeMillis();
 //
-//        insertW(20000, SQLiteHelper.getInstance().getWritableDatabase());
+//        // 数据模型
+////        DB.insert(user);
 //
-//        Log.e(TAG, "框架方式插入2w耗时：" + (System.currentTimeMillis() - start));
+//
+//        DBConfiguration conf = new DBConfiguration.Builder()
+//                .setContext(this)
+//                .setDbName("test.db")
+//                .setVersion(1)
+//                .setConverter(new TypeConverters())
+//                .setEntities(User.class)
+//                .build();
+//
+//        DB.init(conf);
+//
+//
+////        List<User> users = DB.query(User.class,"select * from User", null);
+////        System.out.println(users);
+////
+////        long start  = System.currentTimeMillis();
+////
+////        insertW(20000, SQLiteHelper.getInstance().getWritableDatabase());
+////
+////        Log.e(TAG, "框架方式插入2w耗时：" + (System.currentTimeMillis() - start));
+//
+//        Log.e(TAG, "queryById: " + DB.queryById(100, User.class));
 
-        Log.e(TAG, "queryById: " + DB.queryById(100, User.class));
+        testCrash();
     }
 
     private void insertW(int total, SQLiteDatabase sqLiteDatabase) {
@@ -85,13 +88,14 @@ public class MainActivity extends AppCompatActivity {
             user.arrayList.add("wang");
             user.arrayList.add("yue");
             user.arrayList.add("lin");
-            user.aBytes = new byte[]{1,2,1};
+            user.aBytes = new byte[]{1, 2, 1};
             users.add(user);
 //            originalInsert(user, sqLiteDatabase);
 //            DB.insert(user);
         }
         DB.insert(users);
     }
+
 
     private void originalInsert(User user, SQLiteDatabase sqLiteDatabase) {
         ContentValues values = new ContentValues();
@@ -123,7 +127,22 @@ public class MainActivity extends AppCompatActivity {
             user.aBytes = cursor.getBlob(7);
             users.add(user);
         }
+    }
 
+    private void testCrash() {
+        Crash.setup(getApplicationContext());
 
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                User user = null;
+                System.out.println(user.aaLong);
+            }
+        }).start();
     }
 }
