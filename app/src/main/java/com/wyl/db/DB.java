@@ -46,7 +46,7 @@ public class DB {
      * @param <T>
      * @return
      */
-    public static <T> int insert(List<T> entitys) {
+    public static <T> long insert(List<T> entitys) {
         if (!isInit) return Codes.ERROR_CODE;
         return operation.insert(entitys);
     }

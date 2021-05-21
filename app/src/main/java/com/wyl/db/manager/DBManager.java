@@ -196,7 +196,7 @@ public class DBManager {
      * @param <T>
      * @return
      */
-    public <T> int bulkInsert(List<T> entitys) {
+    public <T> long bulkInsert(List<T> entitys) {
         int len = entitys == null ? 0 : entitys.size();
         if (len == 0) {
             return Codes.SUCCESS_CODE;

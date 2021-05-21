@@ -39,13 +39,13 @@ public class ProcessUtil {
             return currentProcessName;
         }
 
-        //2)通过反射ActivityThread获取当前进程名
+        //2、通过反射ActivityThread获取当前进程名
         currentProcessName = getCurrentProcessNameByActivityThread();
         if (!TextUtils.isEmpty(currentProcessName)) {
             return currentProcessName;
         }
 
-        //3)通过ActivityManager获取当前进程名
+        //3、通过ActivityManager获取当前进程名
         currentProcessName = getCurrentProcessNameByActivityManager(context);
 
         return currentProcessName;

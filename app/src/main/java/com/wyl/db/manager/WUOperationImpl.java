@@ -31,7 +31,7 @@ public class WUOperationImpl implements IOperation {
     }
 
     @Override
-    public <T> int insert(List<T> entitys) {
+    public <T> long insert(List<T> entitys) {
         return dbManager.bulkInsert(entitys);
     }
 
