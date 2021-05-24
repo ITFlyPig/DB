@@ -10,6 +10,8 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.wyl.crash.Crash;
+import com.wyl.db.bean.BaseBean;
+import com.wyl.db.bean.Stu;
 import com.wyl.db.bean.User;
 import com.wyl.db.converter.TypeConverters;
 import com.wyl.db.manager.SQLiteHelper;
@@ -42,7 +44,10 @@ public class MainActivity extends AppCompatActivity {
         user.arrayList.add("yue");
         user.arrayList.add("lin");
 
-
+        Stu stu = new Stu();
+        stu.name = "wangyuelin";
+        stu.age = 888;
+        stu.id = 3;
 
 
         DBConfiguration conf = new DBConfiguration.Builder()
@@ -50,18 +55,22 @@ public class MainActivity extends AppCompatActivity {
                 .setDbName("test.db")
                 .setVersion(1)
                 .setConverter(new TypeConverters())
-                .setEntities(User.class)
+                .setEntities(User.class, Stu.class)
                 .build();
 
         DB.init(conf);
 
 
+        ArrayList<BaseBean> baseBeans = new ArrayList<>();
+        baseBeans.add(user);
+        baseBeans.add(stu);
 
         // 插入
-        DB.insert(user);
+        DB.insert(baseBeans);
 
         // 查询
-        List<User> users = DB.query(User.class,"select * from User", null);
+//        List<User> users = DB.query(User.class,"select * from User", null);
+//        DB.delete(users);
 
 
 //        System.out.println(users);
@@ -72,9 +81,11 @@ public class MainActivity extends AppCompatActivity {
 //
 //        Log.e(TAG, "框架方式插入2w耗时：" + (System.currentTimeMillis() - start));
 
-        Log.e(TAG, "queryById: " + DB.queryById(100, User.class));
+//        Log.e(TAG, "queryById: " + DB.queryById(1, User.class));
 
 //        testCrash();
+
+
     }
 
     private void insertW(int total, SQLiteDatabase sqLiteDatabase) {

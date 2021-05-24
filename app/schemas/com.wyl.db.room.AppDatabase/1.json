@@ -2,23 +2,17 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "9aaf6ab059a77e1cb27a44c672f22d97",
+    "identityHash": "41b238e188d9bf8e7a27fadc28c662df",
     "entities": [
       {
         "tableName": "User",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `first_name` TEXT, `last_name` TEXT, `anInt` INTEGER NOT NULL, `aByte` INTEGER NOT NULL, `aShort` INTEGER NOT NULL, `aLong` INTEGER NOT NULL, `bLong` INTEGER, `aFloat` REAL NOT NULL, `aDouble` REAL NOT NULL, `aBoolean` INTEGER NOT NULL, `bytes` BLOB)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `last_name` TEXT, `anInt` INTEGER NOT NULL, `aByte` INTEGER NOT NULL, `aShort` INTEGER NOT NULL, `aLong` INTEGER NOT NULL, `bLong` INTEGER, `aFloat` REAL NOT NULL, `aDouble` REAL NOT NULL, `aBoolean` INTEGER NOT NULL, `bytes` BLOB)",
         "fields": [
           {
             "fieldPath": "uid",
             "columnName": "uid",
             "affinity": "INTEGER",
             "notNull": true
-          },
-          {
-            "fieldPath": "firstName",
-            "columnName": "first_name",
-            "affinity": "TEXT",
-            "notNull": false
           },
           {
             "fieldPath": "lastName",
@@ -94,7 +88,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9aaf6ab059a77e1cb27a44c672f22d97')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '41b238e188d9bf8e7a27fadc28c662df')"
     ]
   }
 }

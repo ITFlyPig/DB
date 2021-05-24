@@ -2,6 +2,7 @@ package com.wyl.db.room;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ public class User {
     @PrimaryKey(autoGenerate = true)
     public int uid;
 
+    @Ignore
     @ColumnInfo(name = "first_name")
     public String firstName;
 

@@ -1,6 +1,7 @@
 package com.wyl.db.bean;
 
 import com.wyl.db.annotations.ColumnInfo;
+import com.wyl.db.annotations.Ignore;
 import com.wyl.db.annotations.PrimaryKey;
 
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import java.util.HashMap;
  * 创建时间 : 2021/5/10
  * 描述    :
  */
-public class User {
+public class User extends BaseBean{
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "_id")
     public int id;
@@ -22,6 +23,7 @@ public class User {
     public short aShort;
     public byte aByte;
     public long aLong;
+    @Ignore
     public double aDouble;
     public float aFloat;
     public byte[] aBytes;

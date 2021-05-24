@@ -1,9 +1,12 @@
 package com.wyl.db.manager;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.wyl.db.DB;
 import com.wyl.db.DBConfiguration;
+import com.wyl.db.constant.Codes;
+import com.wyl.db.util.LogUtil;
 import com.wyl.db.util.ReflectionUtil;
 
 import java.lang.reflect.Field;
@@ -26,13 +29,15 @@ public class WUOperationImpl implements IOperation {
 
     @Override
     public <T> long insert(T bean) {
-        if (bean == null) return -1;
+        if (bean == null) {
+            return Codes.ERROR_CODE;
+        }
         return dbManager.insert(bean);
     }
 
     @Override
-    public <T> long insert(List<T> entitys) {
-        return dbManager.bulkInsert(entitys);
+    public <T> void insert(List<T> entitys) {
+        dbManager.bulkInsert(entitys);
     }
 
     @Override
@@ -45,24 +50,33 @@ public class WUOperationImpl implements IOperation {
 
     @Override
     public <T> T query(long id, Class<T> entityClz) {
-        if (entityClz == null) return null;
+        if (entityClz == null) {
+            return null;
+        }
         // 获取表名
         String tableName = ReflectionUtil.getTableName(entityClz);
         if (TextUtils.isEmpty(tableName)) {
+            LogUtil.w(DB.tag(), "据主键query失败：获取到的表名为空");
             return null;
         }
         // 找到主键名称
         Field primaryKeyField = ReflectionUtil.getPrimaryKeyField(entityClz);
-        if (primaryKeyField == null) return null;
+        if (primaryKeyField == null) {
+            LogUtil.w(DB.tag(), "据主键query失败：获取到的主键字段为空");
+            return null;
+        }
         String primaryKeyName = ReflectionUtil.getColumnName(primaryKeyField);
         if (TextUtils.isEmpty(primaryKeyName)) {
+            LogUtil.w(DB.tag(), "据主键query失败：获取到的主键名字为空");
             return null;
         }
 
         // 取第一个：据主键查询，那肯定不会有多个啊
         List<T> results = query("select * from " + tableName + " where " + primaryKeyName + " = ?", new String[]{String.valueOf(id)}, entityClz);
         int len = results == null ? 0 : results.size();
-        if (len == 0) return null;
+        if (len == 0) {
+            return null;
+        }
         return results.get(0);
     }
 

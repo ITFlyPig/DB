@@ -24,7 +24,7 @@ public interface IOperation {
      * @param <T>
      * @return 0：表示完全插入成功； -1：有失败的情况存在，不做任何插入操作
      */
-    <T> long insert(List<T> entitys);
+    <T> void insert(List<T> entitys);
 
     /**
      * 据sql查询

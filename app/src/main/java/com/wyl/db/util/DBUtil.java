@@ -2,6 +2,8 @@ package com.wyl.db.util;
 
 import android.text.TextUtils;
 
+import com.wyl.db.annotations.Ignore;
+
 import java.lang.reflect.Field;
 
 /**

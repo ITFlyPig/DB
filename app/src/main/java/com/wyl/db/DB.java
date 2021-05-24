@@ -12,11 +12,16 @@ import java.util.List;
  * 描述    : 对外暴露的数据库操作，使用接口IOperation隔离具体的实现
  */
 public class DB {
-    // 配置，对使用者不可见，包可见，方便直接引用
+    private static final String TAG = DB.class.getSimpleName();
+    /**
+     * 配置，对使用者不可见，包可见，方便直接引用
+     */
     private static DBConfiguration conf;
 
     private static IOperation operation;
-    //标识框架是否已初始化
+    /**
+     * 标识框架是否已初始化
+     */
     private static volatile boolean isInit;
 
     public static void init(DBConfiguration conf) {
@@ -36,19 +41,24 @@ public class DB {
      * @return
      */
     public static <T> long insert(T bean) {
-        if (!isInit) return Codes.ERROR_CODE;
+        if (!isInit) {
+            return Codes.ERROR_CODE;
+        }
         return operation.<T>insert(bean);
     }
 
     /**
      * 插入对象集合，注意：该方法启动了事务，只要有插入失败的，就不会插入到数据库中
+     *
      * @param entitys
      * @param <T>
      * @return
      */
-    public static <T> long insert(List<T> entitys) {
-        if (!isInit) return Codes.ERROR_CODE;
-        return operation.insert(entitys);
+    public static <T> void insert(List<T> entitys) {
+        if (!isInit) {
+            return;
+        }
+        operation.insert(entitys);
     }
 
     /**
@@ -61,18 +71,23 @@ public class DB {
      * @return
      */
     public static <T> List<T> query(Class<T> entityClz, String sql, String... selectionArgs) {
-        if (!isInit) return null;
+        if (!isInit) {
+            return null;
+        }
         return operation.<T>query(sql, selectionArgs, entityClz);
     }
 
     /**
      * 据id查询对应的实体
+     *
      * @param id
      * @param <T>
      * @return
      */
     public static <T> T queryById(long id, Class<T> entityClz) {
-        if (!isInit) return null;
+        if (!isInit) {
+            return null;
+        }
         return operation.query(id, entityClz);
 
 
@@ -86,7 +101,9 @@ public class DB {
      * @return
      */
     public static <T> int delete(T entity) {
-        if (!isInit) return Codes.ERROR_CODE;
+        if (!isInit) {
+            return Codes.ERROR_CODE;
+        }
         return operation.delete(entity);
     }
 
@@ -98,7 +115,9 @@ public class DB {
      * @return
      */
     public static <T> int delete(List<T> entitys) {
-        if (!isInit) return Codes.ERROR_CODE;
+        if (!isInit) {
+            return Codes.ERROR_CODE;
+        }
         return operation.delete(entitys);
     }
 
@@ -110,7 +129,9 @@ public class DB {
      * @return
      */
     public static <T> long update(T entity) {
-        if (!isInit) return Codes.ERROR_CODE;
+        if (!isInit) {
+            return Codes.ERROR_CODE;
+        }
         return operation.update(entity);
     }
 
@@ -124,12 +145,25 @@ public class DB {
      * @return
      */
     public static <T> long update(T entity, String whereClause, String... whereArgs) {
-        if (!isInit) return Codes.ERROR_CODE;
+        if (!isInit) {
+            return Codes.ERROR_CODE;
+        }
         return operation.update(entity, whereClause, whereArgs);
 
     }
 
     public static DBConfiguration getConf() {
         return conf;
+    }
+
+    /**
+     * 获取日志TAG
+     * @return
+     */
+    public static String tag() {
+        if (conf == null || conf.getLogTag() == null) {
+            return TAG;
+        }
+        return conf.getLogTag();
     }
 }

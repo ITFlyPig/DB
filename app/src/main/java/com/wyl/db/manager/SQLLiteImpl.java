@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.wyl.db.DB;
+import com.wyl.db.util.LogUtil;
 import com.wyl.db.util.SQLUtil;
 
 /**
@@ -24,12 +25,14 @@ public class SQLLiteImpl implements ISQLLite {
      */
     private void createTables(SQLiteDatabase db) {
         Class<?>[] entitys = DB.getConf().getEntitys();
-        if (entitys == null) return;
+        if (entitys == null) {
+            return;
+        }
         for (Class<?> entity : entitys) {
             String sql = SQLUtil.createTableSQL(entity, DB.getConf().getConverter());
             if (!TextUtils.isEmpty(sql)) {
                 db.execSQL(sql);
-                Log.d(DB.getConf().getLogTag(), "创建表SQL：" + sql);
+                LogUtil.d(DB.tag(), "创建表SQL：" + sql);
             }
         }
     }

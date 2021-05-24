@@ -2,26 +2,25 @@ package com.wyl.db.manager;
 
 import android.content.ContentValues;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.google.gson.Gson;
 import com.wyl.db.DB;
 import com.wyl.db.annotations.PrimaryKey;
 import com.wyl.db.constant.Codes;
 import com.wyl.db.converter.ITypeConverter;
+import com.wyl.db.util.LogUtil;
 import com.wyl.db.util.ReflectionUtil;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -41,9 +40,14 @@ public class DBManager {
      * @return
      */
     public <T> List<T> query(String sql, String[] selectionArgs, Class<T> entityClz) {
-        if (TextUtils.isEmpty(sql) || entityClz == null) return null;
+        if (TextUtils.isEmpty(sql) || entityClz == null) {
+            return null;
+        }
         SQLiteDatabase database = SQLiteHelper.getInstance().getReadableDatabase();
-        if (database == null) return null;
+        if (database == null) {
+            LogUtil.w(DB.tag(), "query查询失败：获取到的SQLiteDatabase为空");
+            return null;
+        }
         // 数据库查询
         Cursor cursor = null;
         ArrayList<T> data = null;
@@ -52,6 +56,7 @@ public class DBManager {
             data = ReflectionUtil.parseBeans(cursor, entityClz);
         } catch (Exception e) {
             e.printStackTrace();
+            LogUtil.w(DB.tag(), "query查询失败：" + e.getLocalizedMessage());
         } finally {
             if (cursor != null && !cursor.isClosed()) {
                 cursor.close();
@@ -67,7 +72,10 @@ public class DBManager {
      * @return
      */
     public long insert(Object entity) {
-        if (entity == null) return Codes.ERROR_CODE;
+        if (entity == null) {
+            LogUtil.w(DB.tag(), "insert插入失败：传入参数为空");
+            return Codes.ERROR_CODE;
+        }
         // 反射获取对象的值并放到ContentValues
         ContentValues values = fillContentValues(entity);
         // 获取数据库的表名
@@ -76,12 +84,17 @@ public class DBManager {
 
         // 将数据掺入到数据库
         SQLiteDatabase database = SQLiteHelper.getInstance().getReadableDatabase();
-        if (database == null) return Codes.ERROR_CODE;
         long ret = Codes.ERROR_CODE;
+        if (database == null) {
+            LogUtil.w(DB.tag(), "insert插入失败：获取到的SQLiteDatabase为空");
+            return ret;
+        }
+
         try {
             ret = database.insert(tableName, null, values);
         } catch (Exception e) {
             e.printStackTrace();
+            LogUtil.w(DB.tag(), "insert插入失败：" + e.getLocalizedMessage());
         }
         return ret;
     }
@@ -96,7 +109,9 @@ public class DBManager {
      * @return
      */
     public <T> long update(T entity, String whereClause, String[] whereArgs) {
-        if (entity == null) return Codes.ERROR_CODE;
+        if (entity == null) {
+            return Codes.ERROR_CODE;
+        }
         // 获取数据库的表名
         Class<?> clz = entity.getClass();
         String tableName = ReflectionUtil.getTableName(clz);
@@ -106,12 +121,17 @@ public class DBManager {
 
         // 更新
         SQLiteDatabase database = SQLiteHelper.getInstance().getWritableDatabase();
-        if (database == null) return Codes.ERROR_CODE;
         long ret = Codes.ERROR_CODE;
+        if (database == null) {
+            LogUtil.w(DB.tag(), "update whereClause 更新操作失败：获取到的SQLiteDatabase为空" );
+            return ret;
+        }
+
         try {
             ret = database.update(tableName, values, whereClause, whereArgs);
         } catch (Exception e) {
             e.printStackTrace();
+            LogUtil.w(DB.tag(), "update whereClause 更新操作失败：" + e.getLocalizedMessage() );
         }
         return ret;
 
@@ -126,18 +146,19 @@ public class DBManager {
      * @return
      */
     public <T> long update(T entity) {
-        if (entity == null) return Codes.ERROR_CODE;
-        String tag = DB.getConf().getLogTag();
+        if (entity == null) {
+            return Codes.ERROR_CODE;
+        }
         // 获取主键
         Field field = ReflectionUtil.getPrimaryKeyField(entity);
         if (field == null) {
-            Log.e(tag, "update更新操作失败：找不到主键，实体：" + entity);
+            LogUtil.w(DB.tag(), "update更新操作失败：找不到主键字段，实体：" + entity);
             return Codes.ERROR_CODE;
         }
 
         Object primaryKey = getValue(entity, field);
         if (primaryKey == null) {
-            Log.e(tag, "update更新操作失败：获取主键值失败，实体：" + entity);
+            LogUtil.w(DB.tag(), "update更新操作失败：未获取到主键的值，实体：" + entity);
             return Codes.ERROR_CODE;
         }
 
@@ -152,12 +173,16 @@ public class DBManager {
 
         // 将数据掺入到数据库
         SQLiteDatabase database = SQLiteHelper.getInstance().getWritableDatabase();
-        if (database == null) return Codes.ERROR_CODE;
+        if (database == null) {
+            LogUtil.w(DB.tag(), "update更新操作失败：获取到的SQLiteDatabase为空" );
+            return Codes.ERROR_CODE;
+        }
         long ret = Codes.ERROR_CODE;
         try {
             ret = database.update(tableName, values, columnName + " = ?", new String[]{primaryKey.toString()});
         } catch (Exception e) {
             e.printStackTrace();
+            LogUtil.w(DB.tag(), "update更新操作失败：" + e.getLocalizedMessage() );
         }
 
         return ret;
@@ -171,12 +196,18 @@ public class DBManager {
      * @return
      */
     private <T> ContentValues fillContentValues(T entity) {
-        if (entity == null) return new ContentValues();
+        if (entity == null) {
+            return new ContentValues();
+        }
         Class<?> clz = entity.getClass();
         Field[] fields = clz.getDeclaredFields();
         ContentValues values = new ContentValues(fields.length);
         for (Field field : fields) {
             field.setAccessible(true);
+            // 检查字段是否需要过滤
+            if (ReflectionUtil.isFliter(field)) {
+                continue;
+            }
             // 主键
             PrimaryKey primaryKey = field.getAnnotation(PrimaryKey.class);
             // 主键自动生成，不需要设置值
@@ -189,6 +220,35 @@ public class DBManager {
         return values;
     }
 
+
+    /**
+     * 按属于的表不同，将实体分类
+     *
+     * @param entitys
+     * @param <T>
+     * @return
+     */
+    private <T> HashMap<String, ArrayList<T>> separateByTable(List<T> entitys) {
+        HashMap<String, ArrayList<T>> tablesMap = new HashMap<>();
+        for (T entity : entitys) {
+            // 获取实体对应的表名
+            String tableName = ReflectionUtil.getTableName(entity.getClass());
+            if (TextUtils.isEmpty(tableName)) {
+                continue;
+            }
+            // 获取表对应的集合
+            ArrayList<T> table = tablesMap.get(tableName);
+            if (table == null) {
+                table = new ArrayList<>();
+                tablesMap.put(tableName, table);
+            }
+            table.add(entity);
+        }
+
+        return tablesMap;
+    }
+
+
     /**
      * 批量插入
      *
@@ -196,26 +256,57 @@ public class DBManager {
      * @param <T>
      * @return
      */
-    public <T> long bulkInsert(List<T> entitys) {
+    public <T> void bulkInsert(List<T> entitys) {
+        int len = entitys == null ? 0 : entitys.size();
+        if (len == 0) {
+            return;
+        }
+
+        // 按所属表不同进行分割
+        HashMap<String, ArrayList<T>> tablesMap = separateByTable(entitys);
+        // 遍历插入
+        for (Map.Entry<String, ArrayList<T>> tableEntry : tablesMap.entrySet()) {
+            ArrayList<T> items = tableEntry.getValue();
+            insert(items);
+        }
+    }
+
+    /**
+     * 将所有数据插入一个表
+     *
+     * @param entitys
+     * @param <T>
+     * @return
+     */
+    private <T> long insert(List<T> entitys) {
         int len = entitys == null ? 0 : entitys.size();
         if (len == 0) {
             return Codes.SUCCESS_CODE;
         }
 
         SQLiteDatabase database = SQLiteHelper.getInstance().getWritableDatabase();
-        if (database == null) return Codes.ERROR_CODE;
+        if (database == null) {
+            LogUtil.w(DB.tag(), "批量insert插入失败：获取到的SQLiteDatabase为空");
+            return Codes.ERROR_CODE;
+        }
 
         T first = entitys.get(0);
-        if (first == null) return Codes.ERROR_CODE;
+        if (first == null) {
+            LogUtil.w(DB.tag(), "批量insert插入失败：集合第一个数据为空");
+            return Codes.ERROR_CODE;
+        }
 
         //获取表名
         String tableName = ReflectionUtil.getTableName(first.getClass());
         if (TextUtils.isEmpty(tableName)) {
+            LogUtil.w(DB.tag(), "批量insert插入失败：获取到的表名为空");
             return Codes.ERROR_CODE;
         }
 
         ContentValues values = fillContentValues(first);
-        if (values == null) return Codes.ERROR_CODE;
+        if (values == null) {
+            return Codes.ERROR_CODE;
+        }
 
         // 记录表的列名及顺序
         Set<String> keys = values.keySet();
@@ -229,22 +320,27 @@ public class DBManager {
         // insert语句
         String insertSQL = parseInsertSQL(values, null, tableName);
         if (TextUtils.isEmpty(insertSQL)) {
+            LogUtil.w(DB.tag(), "批量insert插入失败：解析得到的sql语句为空");
             return Codes.ERROR_CODE;
         }
 
         SQLiteStatement statement = database.compileStatement(insertSQL);
         if (statement == null) {
+            LogUtil.w(DB.tag(), "批量insert插入失败：据sql语句得到的SQLiteStatement为空");
             return Codes.ERROR_CODE;
         }
 
         database.beginTransaction();
         long ret = 0;
 
+        int insertError = -1;
         try {
             for (T entity : entitys) {
                 // 记录该对象的字段及对应的值
                 ContentValues valuesTemp = fillContentValues(entity);
-                if (valuesTemp == null) continue;
+                if (valuesTemp == null) {
+                    continue;
+                }
                 statement.clearBindings();
                 // ContentValues -> sql
                 for (int j = 0; j < args.length; j++) {
@@ -254,21 +350,24 @@ public class DBManager {
                 }
                 // 检查是否失败
                 ret = statement.executeInsert();
-                if (ret == -1) {
+                if (ret == insertError) {
+                    LogUtil.w(DB.tag(), "批量insert插入失败：executeInsert失败：" + ret);
                     break;
                 }
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            ret = -1;
-        } finally {
-            if (ret != -1) {
+            if (ret != insertError) {
                 database.setTransactionSuccessful();
             }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            LogUtil.w(DB.tag(), "批量insert插入失败：" + e.getLocalizedMessage());
+        } finally {
+            database.endTransaction();
         }
-        database.endTransaction();
-        return ret == -1 ? Codes.ERROR_CODE : Codes.SUCCESS_CODE;
+
+        return ret == insertError ? Codes.ERROR_CODE : Codes.SUCCESS_CODE;
     }
 
     /**
@@ -312,7 +411,9 @@ public class DBManager {
      * @return
      */
     private String parseInsertSQL(ContentValues values, String nullColumnHack, String tableName) {
-        if (values == null || TextUtils.isEmpty(tableName)) return null;
+        if (values == null || TextUtils.isEmpty(tableName)) {
+            return null;
+        }
         StringBuilder sql = new StringBuilder();
         sql.append("INSERT");
         sql.append(" INTO ");
@@ -340,52 +441,6 @@ public class DBManager {
     }
 
     /**
-     * 批量插入到数据库
-     *
-     * @param entitys
-     * @return
-     */
-    public <T> int insert(List<T> entitys) {
-        int len = entitys == null ? 0 : entitys.size();
-        if (len == 0) {
-            return Codes.SUCCESS_CODE;
-        }
-
-        SQLiteDatabase database = SQLiteHelper.getInstance().getWritableDatabase();
-        if (database == null) return Codes.ERROR_CODE;
-        boolean isSuccess = true;
-        try {
-            // 开始事务
-            database.beginTransaction();
-            // 反射获取对象的值并放到ContentValues
-            for (T entity : entitys) {
-                Class<?> clz = entity.getClass();
-                ContentValues values = fillContentValues(entity);
-
-                // 获取数据库的表名
-                String tableName = ReflectionUtil.getTableName(clz);
-                long ret = database.insert(tableName, null, values);
-                if (ret == Codes.ERROR_CODE) {
-                    isSuccess = false;
-                    break;
-                }
-            }
-
-            if (isSuccess) {
-                database.setTransactionSuccessful();
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            database.endTransaction();
-
-        }
-        return isSuccess ? Codes.SUCCESS_CODE : Codes.ERROR_CODE;
-
-    }
-
-    /**
      * 简单数据的填充
      *
      * @param entity
@@ -394,13 +449,17 @@ public class DBManager {
      * @return
      */
     private boolean fillWithSimpleValue(Object entity, ContentValues values, Field field) {
-        if (entity == null || values == null || field == null) return false;
+        if (entity == null || values == null || field == null) {
+            return false;
+        }
         Object value = getValue(entity, field);
         return fillValue(value, values, field);
     }
 
     private boolean fillValue(Object value, ContentValues values, Field field) {
-        if (values == null || field == null) return false;
+        if (values == null || field == null) {
+            return false;
+        }
         String columnName = ReflectionUtil.getColumnName(field);
         if (value == null) {
             values.putNull(columnName);
@@ -440,7 +499,9 @@ public class DBManager {
      * @return
      */
     private boolean fillWithComplexValue(Object entity, ContentValues values, Field field) {
-        if (entity == null || values == null || field == null) return false;
+        if (entity == null || values == null || field == null) {
+            return false;
+        }
         // 复杂的类型，使用转换器转换
         ITypeConverter converter = DB.getConf().getConverter();
         String tag = DB.getConf().getLogTag();
@@ -512,14 +573,18 @@ public class DBManager {
      * @return
      */
     private <T> T getValue(Object obj, Field field) {
-        if (obj == null || field == null) return null;
+        if (obj == null || field == null) {
+            return null;
+        }
         Object value = null;
         try {
             value = field.get(obj);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
-        if (value == null) return null;
+        if (value == null) {
+            return null;
+        }
         return (T) value;
     }
 
@@ -531,7 +596,6 @@ public class DBManager {
      * @return 返回是否都删除成功
      */
     public <T> int delete(List<T> entitys) {
-        String tag = DB.getConf().getLogTag();
         int len = entitys == null ? 0 : entitys.size();
         if (len == 0) {
             return Codes.SUCCESS_CODE;
@@ -539,7 +603,7 @@ public class DBManager {
 
         SQLiteDatabase database = SQLiteHelper.getInstance().getWritableDatabase();
         if (database == null) {
-            Log.e(tag, "delete 操作失败：从数据库连接池获取到的连接为空，实体集合为：" + entitys);
+            LogUtil.w(DB.tag(), "批量delete失败：获取到的SQLiteDatabase为空" );
             return Codes.ERROR_CODE;
         }
         boolean isSuccess = true;
@@ -548,6 +612,7 @@ public class DBManager {
             for (T entity : entitys) {
                 int ret = realDelete(database, entity);
                 if (ret == Codes.ERROR_CODE) {
+                    LogUtil.w(DB.tag(), "realDelete失败：" + ret );
                     isSuccess = false;
                     break;
                 }
@@ -557,6 +622,7 @@ public class DBManager {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            LogUtil.w(DB.tag(), "批量delete失败：" + e.getLocalizedMessage());
         } finally {
             database.endTransaction();
         }

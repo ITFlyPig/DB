@@ -23,7 +23,9 @@ public class SQLUtil {
      * @return
      */
     public static String createTableSQL(Class<?> clz, ITypeConverter converter) {
-        if (clz == null) return null;
+        if (clz == null) {
+            return null;
+        }
         String tableName = ReflectionUtil.getTableName(clz);
         if (TextUtils.isEmpty(tableName)) {
             return null;
@@ -35,6 +37,11 @@ public class SQLUtil {
 
         Field[] fields = clz.getDeclaredFields();
         for (int i = 0; i < fields.length; i++) {
+            // 检查字段是否需要过滤
+            if (ReflectionUtil.isFliter(fields[i])) {
+                continue;
+            }
+
             String columnSQL = columnCreateSQL(fields[i], converter);
             if (TextUtils.isEmpty(columnSQL)) {
                 continue;

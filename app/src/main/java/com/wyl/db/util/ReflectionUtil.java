@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.wyl.db.annotations.ColumnInfo;
 import com.wyl.db.DB;
+import com.wyl.db.annotations.Ignore;
 import com.wyl.db.converter.ITypeConverter;
 import com.wyl.db.annotations.PrimaryKey;
 import com.wyl.db.annotations.Table;
@@ -67,7 +68,9 @@ public class ReflectionUtil {
      * @return
      */
     public static Object parseValue(Object obj, Field field) {
-        if (field == null || obj == null) return null;
+        if (field == null || obj == null) {
+            return null;
+        }
 
         Object value = null;
         try {
@@ -87,7 +90,9 @@ public class ReflectionUtil {
      * @return
      */
     public static <T> ArrayList<T> parseBeans(Cursor cursor, Class<T> clz) {
-        if (cursor == null || clz == null) return null;
+        if (cursor == null || clz == null) {
+            return null;
+        }
         // 获取对象所具有的字段
         HashMap<String, Field> fieldsMap = getFields(clz);
 
@@ -96,7 +101,9 @@ public class ReflectionUtil {
         // 将游标中的数据填充到对象中
         while (cursor.moveToNext()) {
             T obj = newInstance(clz);
-            if (obj == null) continue;
+            if (obj == null) {
+                continue;
+            }
             //取出一行的所有数据
             int count = cursor.getColumnCount();
             for (int i = 0; i < count; i++) {
@@ -158,17 +165,27 @@ public class ReflectionUtil {
      * @param value
      */
     public static void fillField(Field field, Object obj, int value) {
-        if (field == null || obj == null) return;
+        if (field == null || obj == null) {
+            return;
+        }
         Class<?> type = field.getType();
         try {
-            if (type == byte.class || type == Byte.class) {
+            if (type == byte.class) {
                 field.setByte(obj, (byte) value);
-            } else if (type == short.class || type == Short.class) {
+            } else if (type == Byte.class) {
+                field.set(obj, (byte) value);
+            } else if (type == short.class) {
                 field.setShort(obj, (short) value);
-            } else if (type == int.class || type == Integer.class) {
+            } else if (type == Short.class) {
+                field.set(obj, (short)value);
+            } else if (type == int.class) {
                 field.setInt(obj, (int) value);
-            } else if (type == long.class || type == Long.class) {
+            } else if (type == Integer.class) {
+                field.set(obj, value);
+            } else if (type == long.class) {
                 field.setLong(obj, (long) value);
+            } else if (type == Long.class) {
+                field.set(obj, (long) value);
             } else if (type == boolean.class || type == Boolean.class) {
                 field.set(obj, value == 1);
             } else {
@@ -187,7 +204,9 @@ public class ReflectionUtil {
      * @param value
      */
     public static void fillField(Field field, Object obj, float value) {
-        if (field == null || obj == null) return;
+        if (field == null || obj == null) {
+            return;
+        }
         Class<?> type = field.getType();
         try {
             if (type == float.class) {
@@ -214,7 +233,9 @@ public class ReflectionUtil {
      * @param value
      */
     public static void fillField(Field field, Object obj, String value) {
-        if (field == null || obj == null || value == null) return;
+        if (field == null || obj == null || value == null) {
+            return;
+        }
         Class<?> type = field.getType();
         try {
             if (type == String.class) {
@@ -238,8 +259,9 @@ public class ReflectionUtil {
      * @throws IllegalAccessException
      */
     private static void fillComplexField(Field field, Object obj, Object value) throws InvocationTargetException, IllegalAccessException {
-        if (field == null || obj == null || value == null) return;
-        String tag = DB.getConf().getLogTag();
+        if (field == null || obj == null || value == null) {
+            return;
+        }
         Type type = field.getGenericType();
         ITypeConverter converter = DB.getConf().getConverter();
         if (converter != null) {
@@ -250,7 +272,8 @@ public class ReflectionUtil {
                 return;
             }
         }
-        Log.e(tag, "int 类型的值无法放到" + type + " 类型的字段中，字段名为：" + field.getName());
+        LogUtil.e(DB.tag(), "int 类型的值无法放到" + type + " 类型的字段中，字段名为：" + field.getName());
+
     }
 
     /**
@@ -261,7 +284,9 @@ public class ReflectionUtil {
      * @param bytes
      */
     private static void fillField(Field field, Object obj, byte[] bytes) {
-        if (field == null || obj == null || bytes == null) return;
+        if (field == null || obj == null || bytes == null) {
+            return;
+        }
         Class<?> type = field.getType();
         try {
             if (isByteArr(type)) {
@@ -316,7 +341,9 @@ public class ReflectionUtil {
      * @return
      */
     public static String getTableName(Class<?> clz) {
-        if (clz == null) return "";
+        if (clz == null) {
+            return "";
+        }
         String tableName = null;
         // 使用注解里面的表名
         Table table = clz.getAnnotation(Table.class);
@@ -337,7 +364,9 @@ public class ReflectionUtil {
      * @return
      */
     public static String getColumnName(Field field) {
-        if (field == null) return null;
+        if (field == null) {
+            return null;
+        }
         String columnName = null;
         // 从注解获取
         ColumnInfo columnInfo = field.getAnnotation(ColumnInfo.class);
@@ -358,7 +387,9 @@ public class ReflectionUtil {
      * @return
      */
     public static boolean isByteArr(Class<?> clz) {
-        if (clz == null) return false;
+        if (clz == null) {
+            return false;
+        }
         return clz.isArray() && (clz.getComponentType() == Byte.class || clz.getComponentType() == byte.class);
     }
 
@@ -370,23 +401,30 @@ public class ReflectionUtil {
      * @return
      */
     public static boolean typeEqual(Type type1, Type type2) {
-        if (type1 == null || type2 == null) return false;
-        if (type1 instanceof Class && type2 instanceof Class) {  // 具体的不具有泛型的类型
+        if (type1 == null || type2 == null) {
+            return false;
+        }
+        // 具体的不具有泛型的类型
+        if (type1 instanceof Class && type2 instanceof Class) {
             return type1 == type2;
-        } else if (type1 instanceof TypeVariable && type2 instanceof TypeVariable) { //泛型变量，如T
+        } else if (type1 instanceof TypeVariable && type2 instanceof TypeVariable) {
+            //泛型变量，如T
             Type[] bounds1 = ((TypeVariable) type1).getBounds();
             Type[] bounds2 = ((TypeVariable) type2).getBounds();
             return typesEqual(bounds1, bounds2);
 
-        } else if (type1 instanceof WildcardType && type2 instanceof WildcardType) { // 通配符，如？
+        } else if (type1 instanceof WildcardType && type2 instanceof WildcardType) {
+            // 通配符，如？
             WildcardType wildcardType1 = (WildcardType) type1;
             WildcardType wildcardType2 = (WildcardType) type2;
             return typesEqual(wildcardType1.getLowerBounds(), wildcardType2.getLowerBounds()) && typesEqual(wildcardType1.getUpperBounds(), wildcardType2.getUpperBounds());
-        } else if (type1 instanceof ParameterizedType && type2 instanceof ParameterizedType) { // 参数化类型
+        } else if (type1 instanceof ParameterizedType && type2 instanceof ParameterizedType) {
+            // 参数化类型
             ParameterizedType parameterizedType1 = (ParameterizedType) type1;
             ParameterizedType parameterizedType2 = (ParameterizedType) type2;
             return typesEqual(parameterizedType1.getActualTypeArguments(), parameterizedType2.getActualTypeArguments());
-        } else if (type1 instanceof GenericArrayType && type2 instanceof GenericArrayType) { // 泛型数组，如T[]
+        } else if (type1 instanceof GenericArrayType && type2 instanceof GenericArrayType) {
+            // 泛型数组，如T[]
             Type genericComponentType1 = ((GenericArrayType) type1).getGenericComponentType();
             Type genericComponentType2 = ((GenericArrayType) type2).getGenericComponentType();
             return typeEqual(genericComponentType1, genericComponentType2);
@@ -407,7 +445,9 @@ public class ReflectionUtil {
             return true;
         } else if (types1 != null && types2 != null && types1.length == types2.length) {
             // 传入的type数组不为null，但是没有元素的情况
-            if (types1.length == 0) return true;
+            if (types1.length == 0) {
+                return true;
+            }
 
             boolean isEqual = false;
             for (int i = 0; i < types1.length; i++) {
@@ -432,12 +472,16 @@ public class ReflectionUtil {
      * @return
      */
     public static Method findByParamType(Class<?> clz, Type paramType) {
-        if (clz == null || paramType == null) return null;
+        if (clz == null || paramType == null) {
+            return null;
+        }
         Method foundMethod = null;
         Method[] methods = clz.getDeclaredMethods();
         for (Method method : methods) {
             Type[] genericParameterTypes = method.getGenericParameterTypes();
-            if (genericParameterTypes.length != 1) continue;
+            if (genericParameterTypes.length != 1) {
+                continue;
+            }
             if (ReflectionUtil.typeEqual(genericParameterTypes[0], paramType)) {
                 foundMethod = method;
                 break;
@@ -454,13 +498,17 @@ public class ReflectionUtil {
      * @return
      */
     public static Method findByReturnAndParamType(Class<?> clz, Type returnType, Type paramType) {
-        if (clz == null || returnType == null) return null;
+        if (clz == null || returnType == null) {
+            return null;
+        }
         Method foundMethod = null;
         Method[] methods = clz.getDeclaredMethods();
         for (Method method : methods) {
             Type genericReturnType = method.getGenericReturnType();
             Type[] genericParameterTypes = method.getGenericParameterTypes();
-            if (genericParameterTypes.length != 1) continue;
+            if (genericParameterTypes.length != 1) {
+                continue;
+            }
             if (ReflectionUtil.typeEqual(genericReturnType, returnType) && ReflectionUtil.typeEqual(genericParameterTypes[0], paramType)) {
                 foundMethod = method;
                 break;
@@ -470,7 +518,9 @@ public class ReflectionUtil {
     }
 
     public static Field getByName(Class<?> clz, String fieldName) {
-        if (clz == null) return null;
+        if (clz == null) {
+            return null;
+        }
         Field[] fields = clz.getDeclaredFields();
         for (Field field : fields) {
             if (equals(field.getName(), fieldName)) {
@@ -482,7 +532,9 @@ public class ReflectionUtil {
     }
 
     private static boolean equals(CharSequence a, CharSequence b) {
-        if (a == b) return true;
+        if (a == b) {
+            return true;
+        }
         int length;
         if (a != null && b != null && (length = a.length()) == b.length()) {
             if (a instanceof String && b instanceof String) {
@@ -504,7 +556,9 @@ public class ReflectionUtil {
      * @return
      */
     public static Field getPrimaryKeyField(Object obj) {
-        if (obj == null) return null;
+        if (obj == null) {
+            return null;
+        }
         return getPrimaryKeyField(obj.getClass());
     }
 
@@ -515,7 +569,9 @@ public class ReflectionUtil {
      * @return
      */
     public static Field getPrimaryKeyField(Class<?> clz) {
-        if (clz == null) return null;
+        if (clz == null) {
+            return null;
+        }
         Field[] fields = clz.getDeclaredFields();
         for (Field field : fields) {
             PrimaryKey primaryKey = field.getAnnotation(PrimaryKey.class);
@@ -524,5 +580,18 @@ public class ReflectionUtil {
             }
         }
         return null;
+    }
+
+    /**
+     * 表示字段是否需要过滤掉
+     *
+     * @param field
+     * @return
+     */
+    public static boolean isFliter(Field field) {
+        if (field == null) {
+            return true;
+        }
+        return field.getAnnotation(Ignore.class) != null;
     }
 }

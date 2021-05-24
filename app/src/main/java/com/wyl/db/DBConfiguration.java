@@ -13,17 +13,29 @@ import com.wyl.db.manager.ISQLLite;
  */
 public class DBConfiguration {
     private Context context;
-    //数据类型的转换类
+    /**
+     * 数据类型的转换类
+     */
     private ITypeConverter converter;
-    //数据库名
+    /**
+     * 数据库名
+     */
     private String dbName;
-    // 数据库版本
+    /**
+     * 数据库版本
+     */
     private int version;
-    // 数据库的更新
+    /**
+     * 数据库的更新
+     */
     private ISQLLite isqlLite;
-    // 数据模型集合，会据里面的字段自动创建表
+    /**
+     * 数据模型集合，会据里面的字段自动创建表
+     */
     private Class<?>[] entitys;
-    // log TAG
+    /**
+     * log TAG
+     */
     private String logTag;
 
     private DBConfiguration(Context context, ITypeConverter converter, String dbName, int version, ISQLLite isqlLite, Class<?>[] entitys, String logTag) {
