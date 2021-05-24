@@ -5,6 +5,8 @@ import android.text.TextUtils;
 
 import com.wyl.db.converter.ITypeConverter;
 import com.wyl.db.manager.ISQLLite;
+import com.wyl.db.manager.migration.Migration;
+import com.wyl.db.manager.migration.MigrationContainer;
 
 /**
  * 创建人   : yuelinwang
@@ -38,7 +40,12 @@ public class DBConfiguration {
      */
     private String logTag;
 
-    private DBConfiguration(Context context, ITypeConverter converter, String dbName, int version, ISQLLite isqlLite, Class<?>[] entitys, String logTag) {
+    /**
+     * 升级、降级操作的容器
+     */
+    private MigrationContainer migrationContainer;
+
+    private DBConfiguration(Context context, ITypeConverter converter, String dbName, int version, ISQLLite isqlLite, Class<?>[] entitys, String logTag, Migration[] migrations) {
         this.context = context;
         this.converter = converter;
         this.dbName = dbName;
@@ -46,7 +53,10 @@ public class DBConfiguration {
         this.isqlLite = isqlLite;
         this.entitys = entitys;
         this.logTag = logTag;
-
+        migrationContainer = new MigrationContainer();
+        if (migrations != null) {
+            migrationContainer.addMigrations(migrations);
+        }
     }
 
     public Class<?>[] getEntitys() {
@@ -77,6 +87,10 @@ public class DBConfiguration {
         return isqlLite;
     }
 
+    public MigrationContainer getMigrationContainer() {
+        return migrationContainer;
+    }
+
     public static class Builder {
         private Context context;
         private ITypeConverter converter;
@@ -85,6 +99,7 @@ public class DBConfiguration {
         private ISQLLite isqlLite;
         private Class<?>[] entitys;
         private String logTag;
+        private Migration[] migrations;
 
         public Builder setLogTag(String logTag) {
             this.logTag = logTag;
@@ -116,8 +131,13 @@ public class DBConfiguration {
             return this;
         }
 
-        public Builder setEntities(Class<?> ...entity) {
+        public Builder setEntities(Class<?>... entity) {
             this.entitys = entity;
+            return this;
+        }
+
+        public Builder addMigrations(Migration... migrations) {
+            this.migrations = migrations;
             return this;
         }
 
@@ -133,7 +153,7 @@ public class DBConfiguration {
                 illegalArgumentMsg = "版本号version必须大于0";
             }
             if (illegalArgumentMsg != null) {
-                throw  new IllegalArgumentException(illegalArgumentMsg);
+                throw new IllegalArgumentException(illegalArgumentMsg);
             }
 
             if (TextUtils.isEmpty(this.logTag)) {
@@ -141,7 +161,7 @@ public class DBConfiguration {
 
             }
 
-            return new DBConfiguration(this.context, this.converter, this.dbName, this.version, this.isqlLite, this.entitys, this.logTag);
+            return new DBConfiguration(this.context, this.converter, this.dbName, this.version, this.isqlLite, this.entitys, this.logTag, this.migrations);
         }
     }
 }

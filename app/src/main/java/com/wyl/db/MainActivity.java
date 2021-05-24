@@ -14,13 +14,22 @@ import com.wyl.db.bean.BaseBean;
 import com.wyl.db.bean.Stu;
 import com.wyl.db.bean.User;
 import com.wyl.db.converter.TypeConverters;
-import com.wyl.db.manager.SQLiteHelper;
+import com.wyl.db.manager.migration.Migration;
+import com.wyl.db.manager.migration.SQLiteDatabaseWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = MainActivity.class.getSimpleName();
+
+    static final Migration MIGRATION_1_2 = new Migration(1, 2) {
+        @Override
+        public void migrate(SQLiteDatabaseWrapper databaseWrapper) {
+            databaseWrapper.execSQL("ALTER TABLE User"
+                    + " ADD COLUMN appId TEXT");
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,17 +65,22 @@ public class MainActivity extends AppCompatActivity {
                 .setVersion(1)
                 .setConverter(new TypeConverters())
                 .setEntities(User.class, Stu.class)
+                .addMigrations(MIGRATION_1_2)
                 .build();
 
         DB.init(conf);
 
 
-        ArrayList<BaseBean> baseBeans = new ArrayList<>();
-        baseBeans.add(user);
-        baseBeans.add(stu);
+//        ArrayList<BaseBean> baseBeans = new ArrayList<>();
+//        baseBeans.add(user);
+//        baseBeans.add(stu);
 
         // 插入
-        DB.insert(baseBeans);
+//        DB.insert(baseBeans);
+
+        List<Stu> stus = DB.query(Stu.class, "select * from Stu", null);
+        Log.e(TAG, "onCreate: " + stus);
+
 
         // 查询
 //        List<User> users = DB.query(User.class,"select * from User", null);

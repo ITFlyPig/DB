@@ -12,4 +12,13 @@ public class Stu extends BaseBean{
     public int id;
     public String name;
     public int age;
+
+    @Override
+    public String toString() {
+        return "Stu{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", age=" + age +
+                '}';
+    }
 }

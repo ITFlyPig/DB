@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
+import androidx.room.migration.Migration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,5 +35,7 @@ public class User {
     public double aDouble;
     public boolean aBoolean;
     public byte[] bytes;
+
+
 }
 
