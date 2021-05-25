@@ -1,5 +1,6 @@
 package com.wyl.db;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.ContentValues;
@@ -10,15 +11,19 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.wyl.crash.Crash;
+import com.wyl.crash.ICollectStackTraceListener;
 import com.wyl.db.bean.BaseBean;
 import com.wyl.db.bean.Stu;
 import com.wyl.db.bean.User;
 import com.wyl.db.converter.TypeConverters;
 import com.wyl.db.manager.migration.Migration;
 import com.wyl.db.manager.migration.SQLiteDatabaseWrapper;
+import com.wyl.thread.DefaultThreadFactory;
+import com.wyl.thread.WUThreadFactoryUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = MainActivity.class.getSimpleName();
@@ -77,9 +82,9 @@ public class MainActivity extends AppCompatActivity {
 
         // 插入
 //        DB.insert(baseBeans);
-
-        List<Stu> stus = DB.query(Stu.class, "select * from Stu", null);
-        Log.e(TAG, "onCreate: " + stus);
+//
+//        List<Stu> stus = DB.query(Stu.class, "select * from Stu", null);
+//        Log.e(TAG, "onCreate: " + stus);
 
 
         // 查询
@@ -97,7 +102,15 @@ public class MainActivity extends AppCompatActivity {
 
 //        Log.e(TAG, "queryById: " + DB.queryById(1, User.class));
 
-//        testCrash();
+
+//        Thread.currentThread().setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+//            @Override
+//            public void uncaughtException(@NonNull Thread t, @NonNull Throwable e) {
+//                Log.e(TAG, "主线程的uncaughtException: " + e.getLocalizedMessage());
+//            }
+//        });
+
+        testCrash();
 
 
     }
@@ -160,19 +173,31 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void testCrash() {
-        Crash.setup(getApplicationContext());
-
-        new Thread(new Runnable() {
+        Crash.setup(getApplicationContext(), new ICollectStackTraceListener() {
             @Override
-            public void run() {
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                User user = null;
-                System.out.println(user.aaLong);
+            public void onDone(String stackTrace) {
+                Log.e(TAG, "onDone: 收集到的日志：" + stackTrace);
             }
-        }).start();
+        });
+
+//
+//        WUThreadFactoryUtil.newThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                crash();
+//            }
+//        }).start();
+        crash();
+//        Executors.defaultThreadFactory();
+    }
+
+    private void crash() {
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        User user = null;
+        System.out.println(user.aaLong);
     }
 }

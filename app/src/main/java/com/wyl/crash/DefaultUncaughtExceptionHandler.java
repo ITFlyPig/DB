@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Set;
 
@@ -20,30 +21,40 @@ public class DefaultUncaughtExceptionHandler implements Thread.UncaughtException
 
     private static final String CAUSE_CAPTION = "Caused by: ";
 
-    private Thread.UncaughtExceptionHandler prev;
 
     private ICollectStackTraceListener collectStackTraceListener;
 
-    // 记录当前进程名，避免多次获取，因为有可能需要IPC调用才能获取到
+    /**
+     * 记录当前进程名，避免多次获取，因为有可能需要IPC调用才能获取到
+     */
     private String processName;
 
+    private HashMap<Long, Thread.UncaughtExceptionHandler> preMap;
 
-    public DefaultUncaughtExceptionHandler(Thread.UncaughtExceptionHandler prev, ICollectStackTraceListener collectStackTraceListener) {
-        this.prev = prev;
-        this.collectStackTraceListener = collectStackTraceListener;
+
+    public DefaultUncaughtExceptionHandler(ICollectStackTraceListener collectStackTraceListene, HashMap<Long, Thread.UncaughtExceptionHandler> preMap) {
+        this.collectStackTraceListener = collectStackTraceListene;
+        this.preMap = preMap;
     }
 
     @Override
     public void uncaughtException(@NonNull Thread t, @NonNull Throwable e) {
         // 回调不为空，才有收集的必要
         if (collectStackTraceListener != null) {
+            // 收集崩溃堆栈
             String stackTrace = startCollect(e);
+            // 回调
             collectStackTraceListener.onDone(stackTrace);
         }
-        // 还原之前存在的异常处理
-        if (prev != null) {
-            prev.uncaughtException(t, e);
+
+        // 恢复用户设置的处理
+        if (preMap != null) {
+            Thread.UncaughtExceptionHandler preHandler = preMap.get(t.getId());
+            if (preHandler != null) {
+                preHandler.uncaughtException(t, e);
+            }
         }
+
     }
 
     /**
@@ -70,21 +81,26 @@ public class DefaultUncaughtExceptionHandler implements Thread.UncaughtException
 
         builder.append(e);
 
-        for (StackTraceElement traceElement : trace)
+        for (StackTraceElement traceElement : trace) {
             builder.append("\nat ").append(traceElement);
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            for (Throwable se : e.getSuppressed())
+            for (Throwable se : e.getSuppressed()) {
                 collectEnclosedStackTrace(se, trace, SUPPRESSED_CAPTION, "\n", dejaVu, builder);
+            }
         }
         Throwable cause = e.getCause();
-        if (cause != null)
+        if (cause != null) {
             collectEnclosedStackTrace(cause, trace, CAUSE_CAPTION, "", dejaVu, builder);
+        }
         return builder.toString();
     }
 
     private void collectEnclosedStackTrace(Throwable e, StackTraceElement[] enclosingTrace, String caption, String prefix, Set<Throwable> dejaVu, StringBuilder builder) {
-        if (e == null) return;
+        if (e == null) {
+            return;
+        }
         if (dejaVu.contains(e)) {
             builder.append("\t[CIRCULAR REFERENCE:").append(e).append("]");
         } else {
@@ -99,13 +115,15 @@ public class DefaultUncaughtExceptionHandler implements Thread.UncaughtException
             int framesInCommon = trace.length - 1 - m;
 
             // 添加e的堆栈
-            builder.append(prefix).append(caption).append(e);
-            for (int i = 0; i <= m; i++)
-                builder.append(prefix).append("\nat ").append(trace[i]);
+            builder.append("\n ").append(prefix).append(caption).append(e);
+            for (int i = 0; i <= m; i++) {
+                builder.append(prefix).append("\n at ").append(trace[i]);
+            }
 
             // 相同的堆栈
-            if (framesInCommon != 0)
-                builder.append(prefix).append("\t... ").append(framesInCommon).append(" more");
+            if (framesInCommon != 0) {
+                builder.append(prefix).append("\n ... ").append(framesInCommon).append(" more");
+            }
 
             // 添加suppressed exceptions
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {

@@ -1,5 +1,7 @@
 package com.wyl.crash;
 
+import java.util.concurrent.ThreadFactory;
+
 /**
  * 创建人   : yuelinwang
  * 创建时间 : 2021/5/20
@@ -9,11 +11,6 @@ public interface ICrash {
     /**
      * 安装崩溃捕获器
      */
-    void setup();
-
-    /**
-     * 重置，恢复
-     */
-    void reset();
+    void setup(ICollectStackTraceListener collectStackTraceListener);
 
 }
