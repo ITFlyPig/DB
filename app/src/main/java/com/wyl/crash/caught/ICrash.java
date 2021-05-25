@@ -1,6 +1,4 @@
-package com.wyl.crash;
-
-import java.util.concurrent.ThreadFactory;
+package com.wyl.crash.caught;
 
 /**
  * 创建人   : yuelinwang

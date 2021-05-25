@@ -1,9 +1,6 @@
-package com.wyl.crash;
+package com.wyl.crash.caught;
 
-import android.os.Handler;
 import android.os.Looper;
-
-import androidx.annotation.MainThread;
 
 import com.wyl.thread.NewThreadListener;
 import com.wyl.thread.WUThreadFactoryUtil;

@@ -1,29 +1,22 @@
 package com.wyl.db;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.google.gson.Gson;
 import com.wyl.crash.Crash;
-import com.wyl.crash.ICollectStackTraceListener;
-import com.wyl.db.bean.BaseBean;
+import com.wyl.crash.caught.ICollectStackTraceListener;
 import com.wyl.db.bean.Stu;
 import com.wyl.db.bean.User;
 import com.wyl.db.converter.TypeConverters;
 import com.wyl.db.manager.migration.Migration;
 import com.wyl.db.manager.migration.SQLiteDatabaseWrapper;
-import com.wyl.thread.DefaultThreadFactory;
-import com.wyl.thread.WUThreadFactoryUtil;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = MainActivity.class.getSimpleName();

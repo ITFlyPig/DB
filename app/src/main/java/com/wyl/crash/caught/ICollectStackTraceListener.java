@@ -1,4 +1,4 @@
-package com.wyl.crash;
+package com.wyl.crash.caught;
 
 /**
  * 创建人   : yuelinwang

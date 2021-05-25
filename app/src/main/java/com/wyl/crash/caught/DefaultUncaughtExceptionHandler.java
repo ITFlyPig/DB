@@ -1,9 +1,12 @@
-package com.wyl.crash;
+package com.wyl.crash.caught;
 
 import android.os.Build;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+
+import com.wyl.crash.Crash;
+import com.wyl.crash.util.ProcessUtil;
 
 import java.util.Collections;
 import java.util.HashMap;

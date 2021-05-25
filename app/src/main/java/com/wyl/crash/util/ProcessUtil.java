@@ -1,4 +1,4 @@
-package com.wyl.crash;
+package com.wyl.crash.util;
 
 import android.app.ActivityManager;
 import android.app.Application;

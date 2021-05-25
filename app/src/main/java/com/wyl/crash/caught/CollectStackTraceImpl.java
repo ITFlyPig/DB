@@ -1,4 +1,4 @@
-package com.wyl.crash;
+package com.wyl.crash.caught;
 
 import android.util.Log;
 
