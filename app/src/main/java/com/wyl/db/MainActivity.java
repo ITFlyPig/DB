@@ -173,10 +173,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void testCrash() {
+
         Crash.setup(getApplicationContext(), new ICollectStackTraceListener() {
             @Override
             public void onDone(String stackTrace) {
-                Log.e(TAG, "onDone: 收集到的日志：" + stackTrace);
+                // 这是收集到的堆栈日志，可自保存文件或者上传
             }
         });
 

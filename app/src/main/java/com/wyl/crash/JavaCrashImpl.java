@@ -36,7 +36,7 @@ public class JavaCrashImpl implements ICrash {
             return;
         }
         preMap = new HashMap<>();
-        defaultHandler = new DefaultUncaughtExceptionHandler(collectStackTraceListener);
+        defaultHandler = new DefaultUncaughtExceptionHandler(collectStackTraceListener, preMap);
         // 监听新线程的创建
         WUThreadFactoryUtil.setNewThreadListener(new NewThreadListener() {
             @Override

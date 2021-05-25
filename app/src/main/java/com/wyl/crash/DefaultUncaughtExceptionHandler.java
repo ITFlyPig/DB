@@ -75,7 +75,6 @@ public class DefaultUncaughtExceptionHandler implements Thread.UncaughtException
 
         StackTraceElement[] trace = e.getStackTrace();
 
-
         Set<Throwable> dejaVu = Collections.newSetFromMap(new IdentityHashMap<Throwable, Boolean>());
         dejaVu.add(e);
 
