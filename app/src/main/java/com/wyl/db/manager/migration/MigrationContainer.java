@@ -13,6 +13,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 
+/**
+ * 管理升级和降级
+ * @author yuelinwang
+ */
 public class MigrationContainer {
     private HashMap<Integer, TreeMap<Integer, Migration>> mMigrations = new HashMap<>();
 

@@ -12,9 +12,13 @@ import androidx.annotation.Nullable;
  * 创建人   : yuelinwang
  * 创建时间 : 2021/5/10
  * 描述    : SQLite帮助类
+ * @author yuelinwang
  */
 public class SQLiteHelper extends SQLiteOpenHelper {
-    // 将数据库的升级、降级等操作抽离
+
+    /**
+     * 将数据库的升级、降级等操作抽离
+     */
     private static ISQLLite isqlLite;
 
     private static volatile SQLiteHelper sqLiteHelper;

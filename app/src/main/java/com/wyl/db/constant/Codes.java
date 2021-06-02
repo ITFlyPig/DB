@@ -4,6 +4,7 @@ package com.wyl.db.constant;
  * 创建人   : yuelinwang
  * 创建时间 : 2021/5/14
  * 描述    : code 常量
+ * @author yuelinwang
  */
 public interface Codes {
     int ERROR_CODE = -1;

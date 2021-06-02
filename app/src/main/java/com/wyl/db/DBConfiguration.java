@@ -12,6 +12,7 @@ import com.wyl.db.manager.migration.MigrationContainer;
  * 创建人   : yuelinwang
  * 创建时间 : 2021/5/10
  * 描述    : 配置
+ * @author yuelinwang
  */
 public class DBConfiguration {
     private Context context;

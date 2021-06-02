@@ -17,6 +17,7 @@ import java.util.List;
  * 创建人   : yuelinwang
  * 创建时间 : 2021/5/8
  * 描述    : db操作的实现
+ * @author yuelinwang
  */
 public class WUOperationImpl implements IOperation {
     private DBManager dbManager;

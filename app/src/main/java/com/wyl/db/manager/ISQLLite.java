@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase;
  * 创建人   : yuelinwang
  * 创建时间 : 2021/5/10
  * 描述    : SQLLite 相关行为的回调
+ * @author yuelinwang
  */
 public interface ISQLLite {
     /**

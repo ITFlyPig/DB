@@ -32,6 +32,7 @@ import static android.database.Cursor.FIELD_TYPE_STRING;
  * 创建人   : yuelinwang
  * 创建时间 : 2021/5/8
  * 描述    : 反射工具类
+ * @author yuelinwang
  */
 public class ReflectionUtil {
 
@@ -43,7 +44,9 @@ public class ReflectionUtil {
      */
     public static HashMap<String, Object> parseValues(Object obj) {
         HashMap<String, Object> valuesMap = null;
-        if (obj == null) return valuesMap;
+        if (obj == null) {
+            return valuesMap;
+        }
         Class<?> clz = obj.getClass();
         // 获取对象的字段
         Field[] fields = clz.getDeclaredFields();
