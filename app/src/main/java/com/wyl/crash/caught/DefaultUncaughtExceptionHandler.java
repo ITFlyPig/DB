@@ -69,7 +69,7 @@ public class DefaultUncaughtExceptionHandler implements Thread.UncaughtException
         StringBuilder builder = new StringBuilder();
 
         if (TextUtils.isEmpty(processName)) {
-            processName = ProcessUtil.processName(Crash.context);
+            processName = ProcessUtil.processName(Crash.getContext());
         }
         if (!TextUtils.isEmpty(processName)) {
             int processID = ProcessUtil.processID();

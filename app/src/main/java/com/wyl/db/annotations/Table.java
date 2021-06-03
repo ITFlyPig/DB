@@ -14,11 +14,11 @@ import java.lang.annotation.Target;
  */
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD})
+@Target({ElementType.TYPE})
 @Documented
 public @interface Table {
     /**
-     * 列的名字
+     * 表的名字
      *
      * @return
      */

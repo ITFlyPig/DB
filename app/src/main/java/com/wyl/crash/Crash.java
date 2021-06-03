@@ -18,6 +18,10 @@ public class Crash {
     private static final ICrash crash;
     protected static Context context;
 
+    public static Context getContext() {
+        return context;
+    }
+
     static {
         crash = new JavaCrashImpl();
     }

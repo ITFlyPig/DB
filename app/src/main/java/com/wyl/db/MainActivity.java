@@ -15,6 +15,7 @@ import com.wyl.db.bean.User;
 import com.wyl.db.converter.TypeConverters;
 import com.wyl.db.manager.migration.Migration;
 import com.wyl.db.manager.migration.SQLiteDatabaseWrapper;
+import com.wyl.log.persistence.LogBean;
 
 import java.util.ArrayList;
 
@@ -62,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
                 .setDbName("test.db")
                 .setVersion(1)
                 .setConverter(new TypeConverters())
-                .setEntities(User.class, Stu.class)
+                .setEntities(User.class, Stu.class, LogBean.class)
                 .addMigrations(MIGRATION_1_2)
                 .build();
 
