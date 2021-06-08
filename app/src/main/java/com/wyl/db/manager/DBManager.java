@@ -2,10 +2,13 @@ package com.wyl.db.manager;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.text.TextUtils;
 import android.util.Log;
+
+import androidx.annotation.VisibleForTesting;
 
 import com.wyl.db.DB;
 import com.wyl.db.annotations.PrimaryKey;
@@ -123,7 +126,7 @@ public class DBManager {
         SQLiteDatabase database = SQLiteHelper.getInstance().getWritableDatabase();
         long ret = Codes.ERROR_CODE;
         if (database == null) {
-            LogUtil.w(DB.tag(), "update whereClause 更新操作失败：获取到的SQLiteDatabase为空" );
+            LogUtil.w(DB.tag(), "update whereClause 更新操作失败：获取到的SQLiteDatabase为空");
             return ret;
         }
 
@@ -131,7 +134,7 @@ public class DBManager {
             ret = database.update(tableName, values, whereClause, whereArgs);
         } catch (Exception e) {
             e.printStackTrace();
-            LogUtil.w(DB.tag(), "update whereClause 更新操作失败：" + e.getLocalizedMessage() );
+            LogUtil.w(DB.tag(), "update whereClause 更新操作失败：" + e.getLocalizedMessage());
         }
         return ret;
 
@@ -174,7 +177,7 @@ public class DBManager {
         // 将数据掺入到数据库
         SQLiteDatabase database = SQLiteHelper.getInstance().getWritableDatabase();
         if (database == null) {
-            LogUtil.w(DB.tag(), "update更新操作失败：获取到的SQLiteDatabase为空" );
+            LogUtil.w(DB.tag(), "update更新操作失败：获取到的SQLiteDatabase为空");
             return Codes.ERROR_CODE;
         }
         long ret = Codes.ERROR_CODE;
@@ -182,7 +185,7 @@ public class DBManager {
             ret = database.update(tableName, values, columnName + " = ?", new String[]{primaryKey.toString()});
         } catch (Exception e) {
             e.printStackTrace();
-            LogUtil.w(DB.tag(), "update更新操作失败：" + e.getLocalizedMessage() );
+            LogUtil.w(DB.tag(), "update更新操作失败：" + e.getLocalizedMessage());
         }
 
         return ret;
@@ -603,7 +606,7 @@ public class DBManager {
 
         SQLiteDatabase database = SQLiteHelper.getInstance().getWritableDatabase();
         if (database == null) {
-            LogUtil.w(DB.tag(), "批量delete失败：获取到的SQLiteDatabase为空" );
+            LogUtil.w(DB.tag(), "批量delete失败：获取到的SQLiteDatabase为空");
             return Codes.ERROR_CODE;
         }
         boolean isSuccess = true;
@@ -612,7 +615,7 @@ public class DBManager {
             for (T entity : entitys) {
                 int ret = realDelete(database, entity);
                 if (ret == Codes.ERROR_CODE) {
-                    LogUtil.w(DB.tag(), "realDelete失败：" + ret );
+                    LogUtil.w(DB.tag(), "realDelete失败：" + ret);
                     isSuccess = false;
                     break;
                 }
@@ -679,4 +682,87 @@ public class DBManager {
         // 开始删除
         return database.delete(tableName, ReflectionUtil.getColumnName(primaryKeyField) + " = ?", new String[]{primaryKey.toString()});
     }
+
+    /**
+     * 统计数量
+     *
+     * @param entityClz
+     * @param whereClause
+     * @param whereArgs
+     * @param <T>
+     * @return -1：失败；>= 0：表示获取到的数量
+     */
+    public <T> long count(Class<T> entityClz, String whereClause, String[] whereArgs) {
+        if (entityClz == null) {
+            return errorLog("count 操作失败：传入的entityClz为空");
+        }
+        // 获取count函数使用的列的名字
+        String columnName = ReflectionUtil.getCountColumnName(entityClz);
+        if (TextUtils.isEmpty(columnName)) {
+            return errorLog("count 操作失败：据Class获取count使用的字段名为空");
+        }
+        String tableName = ReflectionUtil.getTableName(entityClz);
+        if (TextUtils.isEmpty(tableName)) {
+            return errorLog("count 操作失败：据Class获取count使用的字段名为空");
+        }
+        SQLiteDatabase database = SQLiteHelper.getInstance().getWritableDatabase();
+        if (database == null) {
+            return errorLog("count 操作失败：获取SQLiteDatabase为空");
+        }
+        // 开始构造count 的sql语句
+        String countSQL = getCountStr(whereClause, columnName, tableName);
+
+        // 开始查询
+        SQLiteStatement statement = null;
+        try {
+            statement = database.compileStatement(countSQL);
+            if (whereArgs != null) {
+                for (int i = 0; i < whereArgs.length; i++) {
+                    statement.bindString(i + 1, whereArgs[i]);
+                }
+            }
+            return statement.simpleQueryForLong();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (statement != null) {
+                statement.close();
+            }
+        }
+        return Codes.ERROR_CODE;
+    }
+
+    /**
+     * 构造count 到的sql语句
+     *
+     * @param whereClause
+     * @param columnName
+     * @param tableName
+     * @return
+     */
+    public String getCountStr(String whereClause, String columnName, String tableName) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("select count(").append(columnName).append(") from ").append(tableName);
+        if (!TextUtils.isEmpty(whereClause)) {
+            String where = "where";
+            if (!whereClause.toLowerCase().contains(where)) {
+                builder.append(" ").append(where).append(" ");
+            }
+            builder.append(whereClause);
+        }
+        return builder.toString();
+    }
+
+    /**
+     * 错误的提示log
+     *
+     * @param s
+     * @return 错误码
+     */
+    private int errorLog(String s) {
+        LogUtil.e(DB.tag(), s);
+        return Codes.ERROR_CODE;
+    }
+
 }

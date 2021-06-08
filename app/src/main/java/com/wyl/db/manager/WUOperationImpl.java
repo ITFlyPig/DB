@@ -101,5 +101,10 @@ public class WUOperationImpl implements IOperation {
         return dbManager.update(entity, whereClause, whereArgs);
     }
 
+    @Override
+    public <T> long count(Class<T> entityClz, String whereClause, String[] whereArgs) {
+        return dbManager.count(entityClz, whereClause, whereArgs);
+    }
+
 
 }

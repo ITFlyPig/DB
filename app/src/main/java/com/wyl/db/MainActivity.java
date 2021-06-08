@@ -6,15 +6,19 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.google.gson.Gson;
 import com.wyl.crash.Crash;
 import com.wyl.crash.caught.ICollectStackTraceListener;
+import com.wyl.db.bean.BaseBean;
 import com.wyl.db.bean.Stu;
 import com.wyl.db.bean.User;
 import com.wyl.db.converter.TypeConverters;
 import com.wyl.db.manager.migration.Migration;
 import com.wyl.db.manager.migration.SQLiteDatabaseWrapper;
+import com.wyl.db.room.UserDao;
+import com.wyl.db.room.UserDao_Impl;
 import com.wyl.log.persistence.LogBean;
 
 import java.util.ArrayList;
@@ -64,18 +68,20 @@ public class MainActivity extends AppCompatActivity {
                 .setVersion(1)
                 .setConverter(new TypeConverters())
                 .setEntities(User.class, Stu.class, LogBean.class)
-                .addMigrations(MIGRATION_1_2)
+//                .addMigrations(MIGRATION_1_2)
                 .build();
 
         DB.init(conf);
 
 
-//        ArrayList<BaseBean> baseBeans = new ArrayList<>();
-//        baseBeans.add(user);
-//        baseBeans.add(stu);
+        ArrayList<BaseBean> baseBeans = new ArrayList<>();
+        baseBeans.add(user);
+        baseBeans.add(stu);
 
         // 插入
-//        DB.insert(baseBeans);
+        DB.insert(baseBeans);
+
+        Log.d(TAG, "MainActivity--onCreate: 查询到的数量：" + DB.count(user.getClass(), null, null));
 //
 //        List<Stu> stus = DB.query(Stu.class, "select * from Stu", null);
 //        Log.e(TAG, "onCreate: " + stus);
@@ -104,8 +110,7 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        });
 
-        testCrash();
-
+//        testCrash();
 
     }
 

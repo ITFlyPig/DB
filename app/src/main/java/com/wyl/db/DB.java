@@ -167,4 +167,17 @@ public class DB {
         }
         return conf.getLogTag();
     }
+
+    /**
+     * 统计数量
+     *
+     * @param entityClz
+     * @param whereClause
+     * @param whereArgs
+     * @param <T>
+     * @return -1：失败；>= 0：表示获取到的数量
+     */
+    public static  <T> long count(Class<T> entityClz, String whereClause, String[] whereArgs) {
+        return operation.count(entityClz, whereClause, whereArgs);
+    }
 }

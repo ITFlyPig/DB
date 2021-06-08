@@ -32,6 +32,7 @@ import static android.database.Cursor.FIELD_TYPE_STRING;
  * 创建人   : yuelinwang
  * 创建时间 : 2021/5/8
  * 描述    : 反射工具类
+ *
  * @author yuelinwang
  */
 public class ReflectionUtil {
@@ -180,7 +181,7 @@ public class ReflectionUtil {
             } else if (type == short.class) {
                 field.setShort(obj, (short) value);
             } else if (type == Short.class) {
-                field.set(obj, (short)value);
+                field.set(obj, (short) value);
             } else if (type == int.class) {
                 field.setInt(obj, (int) value);
             } else if (type == Integer.class) {
@@ -544,7 +545,9 @@ public class ReflectionUtil {
                 return a.equals(b);
             } else {
                 for (int i = 0; i < length; i++) {
-                    if (a.charAt(i) != b.charAt(i)) return false;
+                    if (a.charAt(i) != b.charAt(i)) {
+                        return false;
+                    }
                 }
                 return true;
             }
@@ -596,5 +599,37 @@ public class ReflectionUtil {
             return true;
         }
         return field.getAnnotation(Ignore.class) != null;
+    }
+
+    /**
+     * 获取用于count函数的列名称
+     *
+     * @param clz
+     * @return
+     */
+    public static String getCountColumnName(Class<?> clz) {
+        if (clz == null) {
+            return null;
+        }
+
+        Field[] fields = clz.getFields();
+        if (fields == null || fields.length == 0) {
+            return null;
+        }
+        String columnName = null;
+        for (Field field : fields) {
+            PrimaryKey key = field.getAnnotation(PrimaryKey.class);
+            if (key == null) {
+                continue;
+            }
+            columnName = getColumnName(field);
+            break;
+        }
+
+        // 如果未获取到主键对应的列名，则使用Field数组中的第一个字段名
+        if (TextUtils.isEmpty(columnName)) {
+            columnName = getColumnName(fields[0]);
+        }
+        return columnName;
     }
 }
