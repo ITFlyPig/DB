@@ -79,9 +79,9 @@ public class MainActivity extends AppCompatActivity {
         baseBeans.add(stu);
 
         // 插入
-        DB.insert(baseBeans);
+//        DB.insert(baseBeans);
 
-        Log.d(TAG, "MainActivity--onCreate: 查询到的数量：" + DB.count(user.getClass(), null, null));
+//        Log.d(TAG, "MainActivity--onCreate: 查询到的数量：" + DB.count(user.getClass(), null, null));
 //
 //        List<Stu> stus = DB.query(Stu.class, "select * from Stu", null);
 //        Log.e(TAG, "onCreate: " + stus);
@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        });
 
-//        testCrash();
+        testCrash();
 
     }
 
@@ -177,6 +177,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onDone(String stackTrace) {
                 // 这是收集到的堆栈日志，可自保存文件或者上传
+                Log.e(TAG, "onDone: 捕获到的崩溃日志：\n" + stackTrace);
             }
         });
 

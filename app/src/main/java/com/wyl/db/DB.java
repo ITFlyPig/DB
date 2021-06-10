@@ -1,5 +1,7 @@
 package com.wyl.db;
 
+import android.content.ContentValues;
+
 import com.wyl.db.constant.Codes;
 import com.wyl.db.manager.IOperation;
 import com.wyl.db.manager.WUOperationImpl;
@@ -39,7 +41,7 @@ public class DB {
      *
      * @param bean
      * @param <T>
-     * @return
+     * @return the row ID of the newly inserted row, or -1 if an error occurred
      */
     public static <T> long insert(T bean) {
         if (!isInit) {
@@ -179,5 +181,30 @@ public class DB {
      */
     public static  <T> long count(Class<T> entityClz, String whereClause, String[] whereArgs) {
         return operation.count(entityClz, whereClause, whereArgs);
+    }
+
+    /**
+     * 删除
+     * @param entityClz
+     * @param whereClause
+     * @param whereArgs
+     * @param <T>
+     * @return -1：失败；>= 0：影响的行数
+     */
+    public static  <T> long delete(Class<T> entityClz, String whereClause, String... whereArgs) {
+        return operation.delete(entityClz, whereClause, whereArgs);
+    }
+
+    /**
+     * 更新
+     * @param entityClz
+     * @param values
+     * @param whereClause
+     * @param whereArgs
+     * @param <T>
+     * @return 受影响的行数
+     */
+    public static  <T> long update(Class<T> entityClz, ContentValues values, String whereClause, String... whereArgs) {
+        return operation.update(entityClz, values, whereClause, whereArgs);
     }
 }

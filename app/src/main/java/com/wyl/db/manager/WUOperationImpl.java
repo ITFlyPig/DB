@@ -1,5 +1,6 @@
 package com.wyl.db.manager;
 
+import android.content.ContentValues;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -104,6 +105,16 @@ public class WUOperationImpl implements IOperation {
     @Override
     public <T> long count(Class<T> entityClz, String whereClause, String[] whereArgs) {
         return dbManager.count(entityClz, whereClause, whereArgs);
+    }
+
+    @Override
+    public <T> long delete(Class<T> entityClz, String whereClause, String[] whereArgs) {
+        return dbManager.delete(entityClz, whereClause, whereArgs);
+    }
+
+    @Override
+    public <T> long update(Class<T> entityClz, ContentValues values, String whereClause, String[] whereArgs) {
+        return dbManager.update(entityClz, values, whereClause, whereArgs);
     }
 
 

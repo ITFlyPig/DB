@@ -28,6 +28,11 @@ public class LogBean {
      */
     public long time;
 
+    /**
+     * 数据的状态
+     */
+    public long status;
+
     public LogBean(String content, int type, long time) {
         this.content = content;
         this.type = type;

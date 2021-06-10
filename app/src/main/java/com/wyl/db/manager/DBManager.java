@@ -765,4 +765,93 @@ public class DBManager {
         return Codes.ERROR_CODE;
     }
 
+
+    /**
+     * 获取删除语句
+     * @param whereClause
+     * @param tableName
+     * @return
+     */
+    public String getDeleteStr(String whereClause, String tableName) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("delete from ").append(tableName);
+        if (!TextUtils.isEmpty(whereClause)) {
+            String where = "where";
+            if (!whereClause.toLowerCase().contains(where)) {
+                builder.append(" ").append(where).append(" ");
+            }
+            builder.append(whereClause);
+        }
+        return builder.toString();
+    }
+
+
+    /**
+     * 删除
+     * @param entityClz
+     * @param whereClause
+     * @param whereArgs
+     * @param <T>
+     * @return -1：失败：>=0：表示影响的行数
+     */
+    public <T> long delete(Class<T> entityClz, String whereClause, String[] whereArgs) {
+        if (entityClz == null) {
+            return errorLog("delete 操作失败：传入的entityClz参数为空");
+        }
+        String tableName = ReflectionUtil.getTableName(entityClz);
+        if (TextUtils.isEmpty(tableName)) {
+            return errorLog("delete 操作失败：据Class获取count使用的字段名为空");
+        }
+        SQLiteDatabase database = SQLiteHelper.getInstance().getWritableDatabase();
+        if (database == null) {
+            return errorLog("delete 操作失败：获取SQLiteDatabase为空");
+        }
+        String deleteSQL = getDeleteStr(whereClause, tableName);
+
+        // 开始删除
+        SQLiteStatement statement = null;
+        try {
+            statement = database.compileStatement(deleteSQL);
+            if (whereArgs != null) {
+                for (int i = 0; i < whereArgs.length; i++) {
+                    statement.bindString(i + 1, whereArgs[i]);
+                }
+            }
+            return statement.executeUpdateDelete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (statement != null) {
+                statement.close();
+            }
+        }
+        return Codes.ERROR_CODE;
+    }
+
+    /**
+     * 更新
+     * @param entityClz
+     * @param values
+     * @param whereClause
+     * @param whereArgs
+     * @param <T>
+     * @return 受影响的行数
+     */
+    public <T> long update(Class<T> entityClz, ContentValues values, String whereClause, String[] whereArgs) {
+        if (entityClz == null) {
+            return errorLog("update 操作失败：传入的entityClz参数为空");
+        }
+        String tableName = ReflectionUtil.getTableName(entityClz);
+        if (TextUtils.isEmpty(tableName)) {
+            return errorLog("update 操作失败：据Class获取count使用的字段名为空");
+        }
+        SQLiteDatabase database = SQLiteHelper.getInstance().getWritableDatabase();
+        if (database == null) {
+            return errorLog("update 操作失败：获取SQLiteDatabase为空");
+        }
+        // 开始更新
+        return database.update(tableName, values, whereClause, whereArgs);
+    }
+
 }

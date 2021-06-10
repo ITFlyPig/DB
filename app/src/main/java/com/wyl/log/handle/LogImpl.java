@@ -2,9 +2,12 @@ package com.wyl.log.handle;
 
 import com.wyl.db.DB;
 import com.wyl.db.util.LogUtil;
+import com.wyl.db.util.ReflectionUtil;
 import com.wyl.log.Log;
 import com.wyl.log.filter.ILogFilter;
 import com.wyl.log.persistence.LogBean;
+import com.wyl.log.upload.GlobalCount;
+import com.wyl.log.upload.UploadPolicyUtil;
 import com.wyl.log.util.NumberUtil;
 import com.wyl.temp.JsonUtils;
 import com.wyl.thread.WUThreadFactoryUtil;
@@ -80,7 +83,15 @@ public class LogImpl implements ILog {
                     int type = NumberUtil.parseInt(log.get(LogConstant.LOG_TYPE), LogType.NONE);
                     LogBean logBean = new LogBean(toJson(log), type, System.currentTimeMillis());
                     //插入到数据库
-                    DB.insert(logBean);
+                    long id = DB.insert(logBean);
+
+                    if (id > 0) {
+                        String tableName = ReflectionUtil.getTableName(LogBean.class);
+                        GlobalCount.addAndGet(tableName, 1);
+                        // 检查是否应该上传
+                        UploadPolicyUtil.checkUpload();
+                    }
+
 
                     // 持久化已丢弃的日志数量
                     if (mDiscardNum.get() > 0) {

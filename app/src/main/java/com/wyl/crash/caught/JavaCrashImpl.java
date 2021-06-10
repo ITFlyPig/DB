@@ -20,7 +20,7 @@ public class JavaCrashImpl implements ICrash {
     /**
      * 是否已安装
      */
-    private boolean isSetup;
+    private volatile boolean isSetup;
 
     /**
      * 之前别人设置的处理器
@@ -49,6 +49,17 @@ public class JavaCrashImpl implements ICrash {
             }
         });
         // 设置主线程的异常处理器
+        setupMainHandler();
+
+        isSetup = true;
+    }
+
+    /**
+     * 设置主线程的异常处理器
+     *
+     * 设置多次可能带来死循环的风险，所以只在启动的时候设置一次，且不再延迟在设置
+     */
+    private void setupMainHandler() {
         Looper mainLooper = Looper.getMainLooper();
         if (mainLooper != null) {
             Thread mainThread = mainLooper.getThread();
@@ -57,7 +68,5 @@ public class JavaCrashImpl implements ICrash {
             // 设置自己的处理器
             mainThread.setUncaughtExceptionHandler(defaultHandler);
         }
-
-        isSetup = true;
     }
 }

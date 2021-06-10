@@ -29,4 +29,12 @@ public class DBManagerTest  {
         LogUtil.e(TAG, sql);
         assertEquals("select count(id) from stu where name=? and age=?", sql);
     }
+
+    @Test
+    public void testGetDeleteStr() {
+        DBManager dbManager = new DBManager();
+        String sql = dbManager.getDeleteStr("status = ?", "table_name");
+        LogUtil.e(TAG, sql);
+        assertEquals("delete from table_name where status = ?", sql);
+    }
 }

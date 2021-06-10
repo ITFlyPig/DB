@@ -19,6 +19,7 @@ import java.util.Set;
  * 描述    : Java 异常捕获器
  */
 public class DefaultUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
+    private static final String PACKAGE_PREFIX = "com.wyl";
 
     private static final String SUPPRESSED_CAPTION = "Suppressed: ";
 
@@ -42,6 +43,10 @@ public class DefaultUncaughtExceptionHandler implements Thread.UncaughtException
 
     @Override
     public void uncaughtException(@NonNull Thread t, @NonNull Throwable e) {
+        // 判断是否是sdk产生的异常
+        if (!isSdkStack(e)) {
+            return;
+        }
         // 回调不为空，才有收集的必要
         if (collectStackTraceListener != null) {
             // 收集崩溃堆栈
@@ -139,6 +144,21 @@ public class DefaultUncaughtExceptionHandler implements Thread.UncaughtException
                 collectEnclosedStackTrace(cause, trace, CAUSE_CAPTION, prefix, dejaVu, builder);
             }
         }
+    }
+
+    /**
+     * 判断是否是属于sdk的异常
+     * @return
+     */
+    private boolean isSdkStack(Throwable e) {
+        if (e == null) {
+            return false;
+        }
+        String message = e.getLocalizedMessage();
+        if (TextUtils.isEmpty(message)) {
+            return false;
+        }
+        return message.contains(PACKAGE_PREFIX);
 
     }
 }

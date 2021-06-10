@@ -1,11 +1,14 @@
 package com.wyl.db.manager;
 
+import android.content.ContentValues;
+
 import java.util.List;
 
 /**
  * 创建人   : yuelinwang
  * 创建时间 : 2021/5/8
  * 描述    : db操作接口
+ *
  * @author yuelinwang
  */
 public interface IOperation {
@@ -93,4 +96,25 @@ public interface IOperation {
      * @return -1：失败；>= 0：表示获取到的数量
      */
     <T> long count(Class<T> entityClz, String whereClause, String[] whereArgs);
+
+    /**
+     * 删除
+     * @param entityClz
+     * @param whereClause
+     * @param whereArgs
+     * @param <T>
+     * @return -1：失败：>=0：表示影响的行数
+     */
+    <T> long delete(Class<T> entityClz, String whereClause, String[] whereArgs);
+
+    /**
+     *  更新
+     * @param entityClz
+     * @param values
+     * @param whereClause
+     * @param whereArgs
+     * @param <T>
+     * @return 受影响的行数
+     */
+    <T> long update(Class<T> entityClz, ContentValues values, String whereClause, String[] whereArgs);
 }

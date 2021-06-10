@@ -19,3 +19,6 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# 指定不混淆包名，用于判断发生的异常是宿主APP的还是sdk自己的
+-keeppackagenames com.wyl.*
