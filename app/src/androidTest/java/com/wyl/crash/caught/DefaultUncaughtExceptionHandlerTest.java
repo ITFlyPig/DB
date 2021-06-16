@@ -24,4 +24,12 @@ public class DefaultUncaughtExceptionHandlerTest{
 //        assert(handler.isSdkStack(new Throwable(msg)));
 //        assert(!handler.isSdkStack(new Throwable(msg2)));
     }
+
+    @Test
+    public void testStartCollect() {
+//        DefaultUncaughtExceptionHandler handler = new DefaultUncaughtExceptionHandler(null, null);
+//        Throwable e = new IllegalArgumentException("参数不合法");
+//        String stack = handler.startCollect(e);
+//        System.out.println("获取到的堆栈：\n" + stack);
+    }
 }

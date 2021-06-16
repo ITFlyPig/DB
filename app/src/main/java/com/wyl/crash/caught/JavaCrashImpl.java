@@ -29,6 +29,11 @@ public class JavaCrashImpl implements ICrash {
 
     @Override
     public void setup(ICollectStackTraceListener collectStackTraceListener) {
+        // 直接不捕获崩溃
+        if (collectStackTraceListener == null) {
+            return;
+        }
+
         if (isSetup) {
             return;
         }

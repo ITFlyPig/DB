@@ -11,4 +11,5 @@ public interface ICrash {
      */
     void setup(ICollectStackTraceListener collectStackTraceListener);
 
+
 }
