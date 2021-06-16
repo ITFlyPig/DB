@@ -16,10 +16,15 @@ public class Crash {
      * 崩溃堆栈捕获的实现
      */
     private static final ICrash crash;
-    protected static Context context;
+    private static Context context;
+    private static String needCatchPackageName;
 
     public static Context getContext() {
         return context;
+    }
+
+    public static String getNeedCatchPackageName() {
+        return needCatchPackageName;
     }
 
     static {
@@ -29,11 +34,18 @@ public class Crash {
     /**
      * 安装堆栈捕获器
      *
+     * @param needCatchPackageName 需要捕获调用栈的代码的包
      * @param context 上下文，因为会被强引用，所以建议传Application
+     * @param collectStackTraceListener 收集到调用栈之后的回调
      */
-    public static void setup(Context context, ICollectStackTraceListener collectStackTraceListener) {
-        crash.setup(collectStackTraceListener);
+    public static void setup(Context context, String needCatchPackageName, ICollectStackTraceListener collectStackTraceListener) {
+        //都没有回调接口，就没必要处理了
+        if (collectStackTraceListener == null) {
+            return;
+        }
+        Crash.needCatchPackageName = needCatchPackageName;
         Crash.context = context;
+        crash.setup(collectStackTraceListener);
     }
 
 

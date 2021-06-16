@@ -2,6 +2,7 @@ package com.wyl.crash.caught;
 
 import android.os.Looper;
 
+import com.wyl.crash.Crash;
 import com.wyl.thread.NewThreadListener;
 import com.wyl.thread.WUThreadFactoryUtil;
 
@@ -38,7 +39,7 @@ public class JavaCrashImpl implements ICrash {
             return;
         }
         preMap = new HashMap<>();
-        defaultHandler = new DefaultUncaughtExceptionHandler(collectStackTraceListener, preMap);
+        defaultHandler = new DefaultUncaughtExceptionHandler(collectStackTraceListener, preMap, Crash.getNeedCatchPackageName());
         // 监听新线程的创建
         WUThreadFactoryUtil.setNewThreadListener(new NewThreadListener() {
             @Override

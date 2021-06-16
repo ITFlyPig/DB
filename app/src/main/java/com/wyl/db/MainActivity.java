@@ -173,12 +173,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void testCrash() {
 
-        Crash.setup(getApplicationContext(), new ICollectStackTraceListener() {
+        Crash.setup(getApplicationContext(), "com.wyl", new ICollectStackTraceListener() {
             @Override
-            public void onDone(String stackTrace) {
-                // 这是收集到的堆栈日志，可自保存文件或者上传
-                Log.e(TAG, "onDone: 捕获到的崩溃日志：\n" + stackTrace);
+            public void onDone(String summary, String detail) {
+                Log.e(TAG, "onDone: 捕获到的崩溃日志：\n 摘要：" + summary + " \n 详情：\n" +  detail);
             }
+
         });
 
 //
