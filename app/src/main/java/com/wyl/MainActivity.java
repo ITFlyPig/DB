@@ -1,4 +1,4 @@
-package com.wyl.db;
+package com.wyl;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -11,14 +11,16 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.wyl.crash.Crash;
 import com.wyl.crash.caught.ICollectStackTraceListener;
+import com.wyl.db.DB;
+import com.wyl.db.DBConfiguration;
+import com.wyl.db.R;
 import com.wyl.db.bean.BaseBean;
 import com.wyl.db.bean.Stu;
 import com.wyl.db.bean.User;
 import com.wyl.db.converter.TypeConverters;
 import com.wyl.db.manager.migration.Migration;
 import com.wyl.db.manager.migration.SQLiteDatabaseWrapper;
-import com.wyl.db.room.UserDao;
-import com.wyl.db.room.UserDao_Impl;
+import com.wyl.log.LogToDiskUtil;
 import com.wyl.log.persistence.LogBean;
 
 import java.util.ArrayList;
@@ -110,9 +112,20 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        });
 
-        testCrash();
+//        testCrash();
+
+        testDiskLog();
 
     }
+
+    private void testDiskLog() {
+        for (int i = 0; i < 10; i++) {
+            LogToDiskUtil.error(TAG, "test消息" + i, null);
+//            LogToDiskUtil.info(TAG, "test消息" + i, new IllegalArgumentException("info参数不合法"));
+//            LogToDiskUtil.debug(TAG, "test消息" + i, new IllegalArgumentException("debug参数不合法"));
+        }
+    }
+
 
     private void insertW(int total, SQLiteDatabase sqLiteDatabase) {
         ArrayList<User> users = new ArrayList<>(total);
@@ -188,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
 //                crash();
 //            }
 //        }).start();
-        crash();
+//        crash();
 //        Executors.defaultThreadFactory();
     }
 
