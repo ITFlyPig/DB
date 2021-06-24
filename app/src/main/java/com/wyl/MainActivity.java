@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 
 import com.google.gson.Gson;
 import com.wyl.crash.Crash;
@@ -21,9 +22,12 @@ import com.wyl.db.converter.TypeConverters;
 import com.wyl.db.manager.migration.Migration;
 import com.wyl.db.manager.migration.SQLiteDatabaseWrapper;
 import com.wyl.log.LogToDiskUtil;
+import com.wyl.log.WULog;
 import com.wyl.log.persistence.LogBean;
+import com.wyl.log.persistence.LogStatus;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = MainActivity.class.getSimpleName();
@@ -114,7 +118,24 @@ public class MainActivity extends AppCompatActivity {
 
 //        testCrash();
 
-        testDiskLog();
+//        testDiskLog();
+
+//        WULog.onEvent("test");
+
+        findViewById(R.id.tv).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                for (int i = 0; i < 800; i++) {
+//                    HashMap<String, String> param = new HashMap<>();
+//                    param.put("name", "wang");
+//                    param.put("age", "10");
+//                    WULog.onEvent("key_test", param);
+//                }
+                long start = System.currentTimeMillis();
+                long num = testCount();
+                Log.e(TAG, "onClick: 一次数据库查询所消耗的时间：" + (System.currentTimeMillis() - start) + " 查询到的数量：" + num);
+            }
+        });
 
     }
 
@@ -124,6 +145,11 @@ public class MainActivity extends AppCompatActivity {
 //            LogToDiskUtil.info(TAG, "test消息" + i, new IllegalArgumentException("info参数不合法"));
 //            LogToDiskUtil.debug(TAG, "test消息" + i, new IllegalArgumentException("debug参数不合法"));
         }
+    }
+
+    private long testCount() {
+        return DB.count(LogBean.class, "status = ?", String.valueOf(LogStatus.INIT));
+
     }
 
 
@@ -190,6 +216,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onDone(String summary, String detail) {
                 Log.e(TAG, "onDone: 捕获到的崩溃日志：\n 摘要：" + summary + " \n 详情：\n" +  detail);
+//                LogToDiskUtil.onCrash("摘要：" + summary + " \n 详情：\n" +  detail);
             }
 
         });
@@ -201,7 +228,7 @@ public class MainActivity extends AppCompatActivity {
 //                crash();
 //            }
 //        }).start();
-//        crash();
+        crash();
 //        Executors.defaultThreadFactory();
     }
 

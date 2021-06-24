@@ -38,4 +38,7 @@ public class LogBean {
         this.type = type;
         this.time = time;
     }
+
+    public LogBean() {
+    }
 }

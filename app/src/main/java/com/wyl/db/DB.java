@@ -179,7 +179,7 @@ public class DB {
      * @param <T>
      * @return -1：失败；>= 0：表示获取到的数量
      */
-    public static  <T> long count(Class<T> entityClz, String whereClause, String[] whereArgs) {
+    public static  <T> long count(Class<T> entityClz, String whereClause, String... whereArgs) {
         return operation.count(entityClz, whereClause, whereArgs);
     }
 

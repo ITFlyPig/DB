@@ -8,7 +8,6 @@ package com.wyl.log.upload;
 public interface IUpload {
     /**
      * 上传数据
-     * @param data
      */
-    void upload(String data);
+    void upload();
 }

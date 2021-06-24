@@ -18,8 +18,8 @@ import java.util.List;
  * @time : 2021/6/2
  * @desc : 日志模块对外暴露的类
  */
-public class Log {
-    private static String TAG = Log.class.getSimpleName();
+public class WULog {
+    private static String TAG = WULog.class.getSimpleName();
 
     private static ILog log;
     private static List<ILogFilter> filters;
@@ -27,7 +27,7 @@ public class Log {
     static {
         filters = new ArrayList<>();
         filters.add(new StackTraceRepetitionFilter());
-        log = new LogImpl(4, filters);
+        log = new LogImpl(1000, filters);
     }
 
     /**

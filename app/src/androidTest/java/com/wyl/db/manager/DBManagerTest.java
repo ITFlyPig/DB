@@ -3,9 +3,6 @@ package com.wyl.db.manager;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.wyl.db.util.LogUtil;
-import com.wyl.log.Log;
-
-import junit.framework.TestCase;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

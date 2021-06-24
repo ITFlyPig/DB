@@ -2,8 +2,6 @@ package com.wyl.log;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import junit.framework.TestCase;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -26,7 +24,7 @@ public class LogTest {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    Log.onEvent("test");
+                    WULog.onEvent("test");
                 }
             }
         });

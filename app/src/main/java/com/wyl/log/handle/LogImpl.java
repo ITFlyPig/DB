@@ -1,16 +1,11 @@
 package com.wyl.log.handle;
 
-import com.wyl.db.DB;
 import com.wyl.db.util.LogUtil;
-import com.wyl.db.util.ReflectionUtil;
-import com.wyl.log.Log;
+import com.wyl.log.WULog;
 import com.wyl.log.filter.ILogFilter;
-import com.wyl.log.persistence.LogBean;
-import com.wyl.log.upload.GlobalCount;
-import com.wyl.log.upload.UploadPolicyUtil;
-import com.wyl.log.util.NumberUtil;
 import com.wyl.temp.JsonUtils;
 import com.wyl.thread.WUThreadFactoryUtil;
+import com.wyl.util.WULogUtils;
 
 import org.json.JSONException;
 
@@ -26,6 +21,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * @desc : 日志收集实现类
  */
 public class LogImpl implements ILog {
+    public static final String TAG = LogImpl.class.getSimpleName();
+
     /**
      * 存放待处理日志的队列
      */
@@ -37,11 +34,6 @@ public class LogImpl implements ILog {
     private int mQueueCapacity;
 
     /**
-     * 表示是否停止处理日志
-     */
-    private volatile boolean isStop;
-
-    /**
      * 日志过滤集合
      */
     private List<ILogFilter> mFilters;
@@ -51,6 +43,11 @@ public class LogImpl implements ILog {
      */
     private AtomicLong mDiscardNum;
 
+    /**
+     * 处理日志的任务
+     */
+    private HandleLogTask mHandleLogTask;
+
     public LogImpl(int queueCapacity, List<ILogFilter> filters) {
         if (queueCapacity <= 0) {
             throw new IllegalArgumentException("参数：队列容量-queueCapacity必须为正数");
@@ -59,6 +56,7 @@ public class LogImpl implements ILog {
         mQueueCapacity = queueCapacity;
         mDiscardNum = new AtomicLong(0);
         mLogQueue = new LinkedBlockingQueue<>(mQueueCapacity);
+        mHandleLogTask = new HandleLogTask(mLogQueue);
         startHandleLogThread();
     }
 
@@ -66,44 +64,7 @@ public class LogImpl implements ILog {
      * 开启处理日志的线程
      */
     private void startHandleLogThread() {
-        WUThreadFactoryUtil.newThread(new Runnable() {
-            @Override
-            public void run() {
-                while (!isStop) {
-                    HashMap<String, String> log = null;
-                    try {
-                        log = mLogQueue.take();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    if (log == null) {
-                        continue;
-                    }
-
-                    int type = NumberUtil.parseInt(log.get(LogConstant.LOG_TYPE), LogType.NONE);
-                    LogBean logBean = new LogBean(toJson(log), type, System.currentTimeMillis());
-                    //插入到数据库
-                    long id = DB.insert(logBean);
-
-                    if (id > 0) {
-                        String tableName = ReflectionUtil.getTableName(LogBean.class);
-                        GlobalCount.addAndGet(tableName, 1);
-                        // 检查是否应该上传
-                        UploadPolicyUtil.checkUpload();
-                    }
-
-
-                    // 持久化已丢弃的日志数量
-                    if (mDiscardNum.get() > 0) {
-                        long discardNum = mDiscardNum.getAndSet(0);
-                        HashMap<String, String> discardMap = discardNumLog(discardNum);
-                        LogBean discardLog = new LogBean(toJson(discardMap), LogType.SDK_SELF_LOG, System.currentTimeMillis());
-                        DB.insert(discardLog);
-                    }
-
-                }
-            }
-        }).start();
+        WUThreadFactoryUtil.newThread(mHandleLogTask).start();
     }
 
     /**
@@ -117,16 +78,15 @@ public class LogImpl implements ILog {
         }
         // offer返回true，表示将日志成功放到队列中
         if (mLogQueue.offer(log)) {
-            LogUtil.d(Log.tag(), "成功将日志放入队列");
+            WULogUtils.d(TAG, "成功将日志放入队列，等待上传");
             return;
         }
 
         // 队列满了，为了避免OOM，直接将日志丢弃，记录每天丢弃的数量
-
         if (mDiscardNum.get() < Long.MAX_VALUE) {
             mDiscardNum.getAndIncrement();
         }
-        LogUtil.d(Log.tag(), "队列已满，丢弃日志，当前已丢弃的日志的数量：" + mDiscardNum.get());
+        LogUtil.d(WULog.tag(), "队列已满，丢弃日志，当前已丢弃的日志的数量：" + mDiscardNum.get());
     }
 
 
@@ -143,8 +103,21 @@ public class LogImpl implements ILog {
         //  记录线程简单的信息
         params.put(LogConstant.LOG_THREAD, getThreadInfo());
 
+        try {
+            WULogUtils.d(TAG, "onEvent接收到日志：\n" + JsonUtils.toJSONString(params));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+
         // 尝试过滤日志
         if (tryFilter(params)) {
+            WULogUtils.d(TAG, "日志被过滤");
             return;
         }
 
@@ -200,30 +173,5 @@ public class LogImpl implements ILog {
         //  记录线程简单的信息
         params.put(LogConstant.LOG_THREAD, getThreadInfo());
         return params;
-    }
-
-    /**
-     * 对象 -> json
-     *
-     * @param obj
-     * @return
-     */
-    private String toJson(Object obj) {
-        if (obj == null) {
-            return "";
-        }
-        String json = null;
-        try {
-            json = JsonUtils.toJSONString(obj);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-        return json;
     }
 }
