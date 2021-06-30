@@ -16,7 +16,6 @@ import java.lang.reflect.Type;
  * @author yuelinwang
  */
 public class SQLUtil {
-
     /**
      * 返回实体对应的创建语句
      *

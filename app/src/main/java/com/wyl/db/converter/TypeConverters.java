@@ -14,13 +14,31 @@ import java.util.HashMap;
  */
 public class TypeConverters implements ITypeConverter {
 
-    public String convert(ArrayList<String> arrayList) {
-        return "将arrayList转为String";
+    public String convertS(ArrayList<String> arrayList) {
+        return "将arrayList String转为String";
     }
 
-    public ArrayList<String> convert(String s) {
+    public String convertI(ArrayList<Integer> arrayList) {
+        return "将arrayList Integer转为String";
+    }
+
+    public String mapStringString(HashMap<String, String> map) {
+        return "Map转为String";
+    }
+
+    public String mapStringInteger(HashMap<String, Integer> map) {
+        return "Map转为String";
+    }
+
+    public ArrayList<String> convertRetStringList(String s) {
         ArrayList<String> list = new ArrayList<>();
         list.add("这是转换过来的");
+        return list;
+
+    }
+    public ArrayList<Integer> convertRetIntegerList(String s) {
+        ArrayList<Integer> list = new ArrayList<>();
+        list.add(1);
         return list;
 
     }

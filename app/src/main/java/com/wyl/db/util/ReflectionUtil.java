@@ -38,55 +38,6 @@ import static android.database.Cursor.FIELD_TYPE_STRING;
 public class ReflectionUtil {
 
     /**
-     * 将对象的值和字段名称放入到Map中
-     *
-     * @param obj
-     * @return
-     */
-    public static HashMap<String, Object> parseValues(Object obj) {
-        HashMap<String, Object> valuesMap = null;
-        if (obj == null) {
-            return valuesMap;
-        }
-        Class<?> clz = obj.getClass();
-        // 获取对象的字段
-        Field[] fields = clz.getDeclaredFields();
-        valuesMap = new HashMap<>(fields.length);
-        // 循环获取字段对应的值
-        for (Field field : fields) {
-            Object value = parseValue(obj, field);
-            //检查获取到的值的类型是否是数据库支持的
-            if (!DBUtil.checkDBSupport(value)) {
-                value = null;
-            }
-            valuesMap.put(field.getName(), value);
-        }
-        return valuesMap;
-    }
-
-    /**
-     * 获取字段对应的值
-     *
-     * @param obj
-     * @param field
-     * @return
-     */
-    public static Object parseValue(Object obj, Field field) {
-        if (field == null || obj == null) {
-            return null;
-        }
-
-        Object value = null;
-        try {
-            field.setAccessible(true);
-            value = field.get(obj);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        return value;
-    }
-
-    /**
      * 从游标中解析出数据模型
      *
      * @param cursor
@@ -158,6 +109,8 @@ public class ReflectionUtil {
                 byte[] byteArr = cursor.getBlob(columnIndex);
                 fillField(field, obj, byteArr);
                 break;
+            default:
+
         }
     }
 
@@ -245,7 +198,6 @@ public class ReflectionUtil {
             if (type == String.class) {
                 field.set(obj, value);
             } else {
-
                 fillComplexField(field, obj, value);
             }
         } catch (Exception e) {
@@ -496,6 +448,7 @@ public class ReflectionUtil {
 
     /**
      * 从类中找到返回值类型和参数类型与传入类型匹配的方法
+     * 在这里因为是 db -> obj，所以，这里的参数paramType只会是String、字节数组
      *
      * @param clz
      * @param returnType
@@ -521,18 +474,22 @@ public class ReflectionUtil {
         return foundMethod;
     }
 
+    /**
+     * 据名称获取Field
+     * @param clz
+     * @param fieldName
+     * @return
+     */
     public static Field getByName(Class<?> clz, String fieldName) {
-        if (clz == null) {
+        if (clz == null || TextUtils.isEmpty(fieldName)) {
             return null;
         }
-        Field[] fields = clz.getDeclaredFields();
-        for (Field field : fields) {
-            if (equals(field.getName(), fieldName)) {
-                return field;
-            }
+        try {
+            return clz.getDeclaredField(fieldName);
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
         }
         return null;
-
     }
 
     private static boolean equals(CharSequence a, CharSequence b) {
