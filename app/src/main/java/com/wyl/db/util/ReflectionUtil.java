@@ -86,6 +86,11 @@ public class ReflectionUtil {
         if (field == null) {
             return;
         }
+        // 忽略该字段
+        Ignore ignore = field.getAnnotation(Ignore.class);
+        if (ignore != null) {
+            return;
+        }
         field.setAccessible(true);
         // 列数据类型
         int type = cursor.getType(columnIndex);

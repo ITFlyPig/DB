@@ -7,6 +7,8 @@ import junit.framework.TestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Date;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -20,6 +22,6 @@ public class LogToDiskUtilTest {
 
     @Test
     public void testGenerateFileName() {
-        assertEquals("debug-log-2021-06-18.txt", LogToDiskUtil.generateFileName());
+        assertEquals("debug-log-2021-06-18.txt", LogToDiskUtil.generateFileName(new Date()));
     }
 }

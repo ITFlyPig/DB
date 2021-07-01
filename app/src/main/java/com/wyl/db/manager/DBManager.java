@@ -214,7 +214,7 @@ public class DBManager {
             // 主键
             PrimaryKey primaryKey = field.getAnnotation(PrimaryKey.class);
             // 主键自动生成，不需要设置值
-            if (primaryKey != null && primaryKey.autoGenerate()) {
+            if (primaryKey != null) {
                 continue;
             }
 
@@ -546,26 +546,6 @@ public class DBManager {
         }
         return true;
     }
-
-
-    /**
-     * 是否是基本的类型
-     *
-     * @param type
-     * @return
-     */
-    private boolean isBasicType(Class<?> type) {
-        return Byte.class == type || byte.class == type
-                || Float.class == type || float.class == type
-                || Short.class == type || short.class == type
-                || Double.class == type || double.class == type
-                || String.class == type
-                || Boolean.class == type || boolean.class == type
-                || Integer.class == type || int.class == type
-                || Long.class == type || long.class == type
-                || ReflectionUtil.isByteArr(type);
-    }
-
 
     /**
      * 获取对象中对应字段的值

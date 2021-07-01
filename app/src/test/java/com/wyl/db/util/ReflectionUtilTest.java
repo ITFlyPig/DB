@@ -1,7 +1,6 @@
 package com.wyl.db.util;
 
 import android.app.Application;
-import android.renderscript.Script;
 import android.text.TextUtils;
 
 import com.wyl.db.DB;
@@ -9,24 +8,20 @@ import com.wyl.db.DBConfiguration;
 import com.wyl.db.bean.TestEmptyBean;
 import com.wyl.db.bean.TestStuBean;
 import com.wyl.db.bean.TestTeaBean;
-import com.wyl.db.converter.ITypeConverter;
 import com.wyl.db.converter.TypeConverters;
 
 import junit.framework.TestCase;
 
-import org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.Assert.assertNotEquals;
 

@@ -92,11 +92,25 @@ public class WUOperationImpl implements IOperation {
         return dbManager.delete(entitys);
     }
 
+    /**
+     * 据传入的entity的主键进行更新
+     * @param entity
+     * @param <T>
+     * @return
+     */
     @Override
     public <T> long update(T entity) {
         return dbManager.update(entity);
     }
 
+    /**
+     * 将符合条件的数据都修改为entity那样的
+     * @param entity
+     * @param whereClause
+     * @param whereArgs
+     * @param <T>
+     * @return
+     */
     @Override
     public <T> long update(T entity, String whereClause, String[] whereArgs) {
         return dbManager.update(entity, whereClause, whereArgs);
