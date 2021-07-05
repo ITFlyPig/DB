@@ -21,6 +21,10 @@ import java.util.List;
 public class ProcessUtil {
 
 
+    /**
+     * 获取进程的id
+     * @return
+     */
     public static int processID() {
         return Process.myPid();
     }
@@ -54,7 +58,7 @@ public class ProcessUtil {
     /**
      * 通过Application新的API获取进程名，无需反射，无需IPC，效率最高。
      */
-    public static String getCurrentProcessNameByApplication() {
+    private static String getCurrentProcessNameByApplication() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             return Application.getProcessName();
         }
@@ -64,7 +68,7 @@ public class ProcessUtil {
     /**
      * 通过反射ActivityThread获取进程名，避免了ipc
      */
-    public static String getCurrentProcessNameByActivityThread() {
+    private static String getCurrentProcessNameByActivityThread() {
         String processName = null;
         try {
             final Method declaredMethod = Class.forName("android.app.ActivityThread", false, Application.class.getClassLoader())
@@ -83,7 +87,7 @@ public class ProcessUtil {
     /**
      * 通过ActivityManager 获取进程名，需要IPC通信
      */
-    public static String getCurrentProcessNameByActivityManager(@NonNull Context context) {
+    private static String getCurrentProcessNameByActivityManager(@NonNull Context context) {
         if (context == null) {
             return null;
         }

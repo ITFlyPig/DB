@@ -13,23 +13,59 @@ import org.junit.runner.RunWith;
  * @desc :
  */
 
-@RunWith(AndroidJUnit4.class)
-public class DefaultUncaughtExceptionHandlerTest{
+public class DefaultUncaughtExceptionHandlerTest extends TestCase{
+    private DefaultUncaughtExceptionHandler handler;
 
-    @Test
-    public void testIsSdkStack() {
-//        String msg = "java.lang.NullPointerException: Attempt to read from field 'java.lang.Long com.wyl.db.c.c.i' on a null object reference";
-//        String msg2 = "java.lang.NullPointerException: Attempt to read from field 'java.lang.Long a.aa.db.c.c.i' on a null object reference";
-//        DefaultUncaughtExceptionHandler handler = new DefaultUncaughtExceptionHandler(null, null);
-//        assert(handler.isSdkStack(new Throwable(msg)));
-//        assert(!handler.isSdkStack(new Throwable(msg2)));
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+
+
     }
 
-    @Test
-    public void testStartCollect() {
-//        DefaultUncaughtExceptionHandler handler = new DefaultUncaughtExceptionHandler(null, null);
-//        Throwable e = new IllegalArgumentException("参数不合法");
-//        String stack = handler.startCollect(e);
-//        System.out.println("获取到的堆栈：\n" + stack);
+    public void testUncaughtException() {
+        Thread  t = Thread.currentThread();
+        // 参数为空
+        handler = new DefaultUncaughtExceptionHandler(new ICollectStackTraceListener() {
+            @Override
+            public void onDone(String summary, String detail) {
+                assertNull(summary);
+                assertNull(detail);
+            }
+        }, null, "com.wyl.db");
+        handler.uncaughtException(null, null);
+
+        // 包名前缀不对
+        handler = new DefaultUncaughtExceptionHandler(new ICollectStackTraceListener() {
+            @Override
+            public void onDone(String summary, String detail) {
+                assertNull(summary);
+                assertNull(detail);
+            }
+        }, null, "com.wyl.db");
+        handler.uncaughtException(t, new IllegalArgumentException("测试参数不合法"));
+
+        // 包名前缀正确
+        handler = new DefaultUncaughtExceptionHandler(new ICollectStackTraceListener() {
+            @Override
+            public void onDone(String summary, String detail) {
+                assertNotNull(summary);
+                assertNotNull(detail);
+            }
+        }, null, "com.wyl.crash");
+        handler.uncaughtException(t, new IllegalArgumentException("测试参数不合法"));
+
+        // 测试处理异常的过程中发生异常
+        handler = new DefaultUncaughtExceptionHandler(new ICollectStackTraceListener() {
+            @Override
+            public void onDone(String summary, String detail) {
+                assertNotNull(summary);
+                assertNotNull(detail);
+                throw new RuntimeException("测试处理异常时发生异常");
+            }
+        }, null, "com.wyl.crash");
+        handler.uncaughtException(t, new IllegalArgumentException("测试参数不合法"));
+
+
     }
 }
