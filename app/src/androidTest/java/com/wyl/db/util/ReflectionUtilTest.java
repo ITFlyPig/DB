@@ -2,7 +2,9 @@ package com.wyl.db.util;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import junit.framework.TestCase;
+import com.wyl.db.bean.Stu;
+import com.wyl.db.bean.Tea;
+import com.wyl.db.bean.TestCountBean;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

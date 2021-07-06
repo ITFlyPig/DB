@@ -39,8 +39,14 @@ public class LogUploader implements IUpload {
      */
     private ShouldUploadRecord mShouldUploadNum;
 
-    public LogUploader(@NonNull ShouldUploadRecord shouldUploadNum) {
+    /**
+     * 上传结果的监听
+     */
+    private UploadListener mUploadListener;
+
+    public LogUploader(@NonNull ShouldUploadRecord shouldUploadNum, @NonNull UploadListener uploadListener) {
         this.mShouldUploadNum = shouldUploadNum;
+        this.mUploadListener = uploadListener;
     }
 
     @Override
@@ -93,7 +99,7 @@ public class LogUploader implements IUpload {
 
         //开始上传
         long finalCurStatusVersion = curStatusVersion;
-        IJsonDataListener listener = new IJsonDataListener<Object>() {
+        IJsonDataListener<Object> listener = new IJsonDataListener<Object>() {
             @Override
             public void onSuccess(Object o) {
 
@@ -101,6 +107,9 @@ public class LogUploader implements IUpload {
                 long num = DB.delete(LogBean.class, "status = ?", String.valueOf(finalCurStatusVersion));
                 mShouldUploadNum.setNum(0);
                 WULogUtils.d(TAG, "上传成功，删除数据库中的数据和内存中的记录");
+                if (mUploadListener != null) {
+                    mUploadListener.onSuccess(finalCurStatusVersion);
+                }
             }
 
             @Override
@@ -115,18 +124,21 @@ public class LogUploader implements IUpload {
                 if (num > 0) {
                     mShouldUploadNum.decrement(num);
                 }
+                if (mUploadListener != null) {
+                    mUploadListener.onFail(finalCurStatusVersion);
+                }
             }
         };
 //            HttpUtils.<HashMap<String, String>, Object>senRequest(Urls.UPLOAD_LOG, null, Object.class, listener);
 
-        // 测试模拟
+        // 模拟网络请求的结果
         try {
             WULogUtils.d(TAG, "开始联网上传");
             Thread.sleep(random(500, 1000));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        if (random(1, 2) % 2 == 0) {
+        if (random(0, 3) % 2 == 0) {
             listener.onSuccess(null);
         } else {
             listener.onFailed(null);

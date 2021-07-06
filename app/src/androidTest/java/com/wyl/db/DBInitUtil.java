@@ -6,6 +6,7 @@ import androidx.test.core.app.ApplicationProvider;
 
 import com.wyl.db.bean.User;
 import com.wyl.db.converter.TypeConverters;
+import com.wyl.log.persistence.LogBean;
 
 /**
  * @author : yuelinwang
@@ -23,7 +24,7 @@ public class DBInitUtil {
                 .setDbName("test.db")
                 .setVersion(1)
                 .setConverter(new TypeConverters())
-                .setEntities(User.class)
+                .setEntities(User.class, LogBean.class)
                 .build();
 
         DB.init(conf);

@@ -1,4 +1,4 @@
-package com.wyl.db.util;
+package com.wyl.db.bean;
 
 import com.wyl.db.annotations.PrimaryKey;
 

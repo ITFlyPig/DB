@@ -52,7 +52,7 @@ public class HandleLogTask implements Runnable{
         this.mLogQueue = logQueue;
         mShouldUploadNum = new ShouldUploadRecord();
         mUploadPolicy = new LimitNumPolicy( LimitNumPolicy.DEFAULT_LIMIT, mShouldUploadNum);
-        mUploader = new LogUploader(mShouldUploadNum);
+        mUploader = new LogUploader(mShouldUploadNum, null);
     }
 
     @Override
