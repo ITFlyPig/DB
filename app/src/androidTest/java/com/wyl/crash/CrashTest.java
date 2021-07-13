@@ -10,6 +10,7 @@ import com.wyl.thread.WUThreadFactoryUtil;
 import junit.framework.TestCase;
 
 import org.junit.Assert.*;
+import org.junit.runner.RunWith;
 
 /**
  * @author : yuelinwang

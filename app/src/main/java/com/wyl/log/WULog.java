@@ -25,7 +25,7 @@ public class WULog {
     private static List<ILogFilter> filters;
 
     static {
-        filters = new ArrayList<>();
+        filters = new ArrayList<>(1);
         filters.add(new StackTraceRepetitionFilter());
         log = new LogImpl(1000, filters);
     }

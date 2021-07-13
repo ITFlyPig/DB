@@ -1,6 +1,7 @@
 package com.wyl;
 
 import android.app.Application;
+import android.content.Context;
 
 /**
  * @author : yuelinwang
@@ -8,8 +9,8 @@ import android.app.Application;
  * @desc :
  */
 public class MyApplication extends Application {
-    private static MyApplication application;
-    public static MyApplication getInstance() {
+    private static Context application;
+    public static Context getInstance() {
         return application;
     }
 

@@ -26,6 +26,14 @@ public class NumberUtil {
             e.printStackTrace();
         }
         return ret;
+    }
 
+    /**
+     * String -> int
+     * @param s
+     * @return
+     */
+    public static int parseInt(String s) {
+        return parseInt(s, 0);
     }
 }

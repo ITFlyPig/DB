@@ -29,7 +29,6 @@ public class HandleLogTask implements Runnable{
      * 表示是否停止处理日志
      */
     private volatile boolean isStop;
-
     /**
      * 存储任务的队列
      */
@@ -47,12 +46,29 @@ public class HandleLogTask implements Runnable{
      * 上传器
      */
     private IUpload mUploader;
+    /**
+     * 每次触发删除，应该删除的条数
+     */
+    private static final int DELETE_NUM = 100;
+
+    /**
+     * 数据库最大存储条数，超过了，就把最久的删除了在存储
+     */
+    private int mMaxStoreNum = 10000;
 
     public HandleLogTask(LinkedBlockingQueue<HashMap<String, String>> logQueue) {
         this.mLogQueue = logQueue;
         mShouldUploadNum = new ShouldUploadRecord();
         mUploadPolicy = new LimitNumPolicy( LimitNumPolicy.DEFAULT_LIMIT, mShouldUploadNum);
         mUploader = new LogUploader(mShouldUploadNum, null);
+    }
+
+    /**
+     * 可更改条数限制
+     * @param maxStoreNum
+     */
+    public void setMaxStoreNum(int maxStoreNum) {
+        this.mMaxStoreNum = maxStoreNum;
     }
 
     @Override
@@ -69,6 +85,8 @@ public class HandleLogTask implements Runnable{
             if (log == null) {
                 continue;
             }
+            // 检查一下是否达到数据库存储限制
+            checkMaxStoreLimit();
 
             int type = NumberUtil.parseInt(log.get(LogConstant.LOG_TYPE), LogType.NONE);
             // Map -> json
@@ -88,7 +106,7 @@ public class HandleLogTask implements Runnable{
             WULogUtils.d(TAG, "将日志插入到数据库成功");
             if (mShouldUploadNum.getNum() < 0) {
                 // 表示启动后第一次使用，从数据库读应该上传的数量
-                mShouldUploadNum.setNum(queryShouldUploadNum());
+                mShouldUploadNum.setNum(countAll());
             } else {
                 // 更新内存中记录的数量
                 mShouldUploadNum.add(1);
@@ -108,11 +126,21 @@ public class HandleLogTask implements Runnable{
     }
 
     /**
+     * 检查最大存储的限制
+     */
+    private void checkMaxStoreLimit() {
+        long num = countAll();
+        if (num >= mMaxStoreNum) { // 应该删除最久的DELETE_NUM条数据
+            DB.delete(LogBean.class, " where id in (select id from log_table order by id limit 0, ?)", String.valueOf(100) );
+        }
+    }
+
+    /**
      * 查询应该上传的数据的条数
      * @return
      */
-    private long queryShouldUploadNum() {
-        // 首次启动，数据库中任何状态的数据都是应该上传的
+    private long countAll() {
+        // 查询数据库中的条数
         long num = DB.count(LogBean.class, null, null);
         return num < 0 ? 0 : num;
     }

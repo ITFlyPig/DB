@@ -51,6 +51,7 @@ dependencies {
     implementation "androidx.room:room-runtime:$room_version"
     annotationProcessor "androidx.room:room-compiler:$room_version"
 
+    //****************test目录下的依赖**********************
     //mockito
     testImplementation 'org.mockito:mockito-core:3.11.2'
 
@@ -59,6 +60,15 @@ dependencies {
     testImplementation "org.powermock:powermock-api-mockito2:2.0.2"
 
     testImplementation 'junit:junit:4.+'
+
+    //****************androidTest目录下的依赖**********************
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    //mockito
+    androidTestImplementation 'org.mockito:mockito-core:3.11.2'
+
+    //PowerMock
+    androidTestImplementation "org.powermock:powermock-module-junit4:2.0.2"
+    androidTestImplementation "org.powermock:powermock-api-mockito2:2.0.2"
+
 }

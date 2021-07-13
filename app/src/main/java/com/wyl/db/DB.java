@@ -186,7 +186,7 @@ public class DB {
     /**
      * 删除
      * @param entityClz
-     * @param whereClause
+     * @param whereClause 如果有where，必须得自己写 where xxxx >= xxxx 类似的
      * @param whereArgs
      * @param <T>
      * @return -1：失败；>= 0：影响的行数

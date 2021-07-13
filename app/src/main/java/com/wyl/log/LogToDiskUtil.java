@@ -98,19 +98,20 @@ public class LogToDiskUtil {
     }
 
     /**
-     * 删除上一天的保存log的文件
+     * 删除今天之前保存log的文件
      */
-    private static void deleteLastDayLog() {
-        Date now = new Date();
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(now);
-        calendar.add(Calendar.DATE, -1);
-        Date lastDay = calendar.getTime();
-        String lastLogName = generateFileName(lastDay);
-        String lastDayLogPath = LOG_DIR + File.separator + lastLogName;
-        File lastDayLog = new File(lastDayLogPath);
-        if (lastDayLog.exists()) {
-            lastDayLog.delete();
+    private static void deletePreLog() {
+        File logDir = new File(LOG_DIR);
+        File[] logFiles = logDir.listFiles();
+        if (logFiles == null) {
+            return;
+        }
+        String todayLogFileName = generateFileName(now());
+        for (File file : logFiles) {
+            String preLogFileName = file.getName();
+            if (file.exists() && !TextUtils.equals(preLogFileName, todayLogFileName)) {
+                file.delete();
+            }
         }
     }
 
@@ -133,22 +134,31 @@ public class LogToDiskUtil {
         }
         // 检查上一天的日志是否删除了
         if (!isDeleteLastDayLog) {
-            deleteLastDayLog();
+            deletePreLog();
             isDeleteLastDayLog = true;
         }
         // 将今天的debug log写到文件
 
         //确保记录日志的文件存在
-        File logFile = makeFileIfNotExist(generateFileName(new Date()));
+        File logFile = makeFileIfNotExist(generateFileName(now()));
         if (logFile == null) {
             return;
         }
         try {
-            FileUtils.stringToFile(logFile, log + "\n");
+            FileUtils.stringToFile(logFile, log);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+    }
+
+    /**
+     * 当前时间
+     *
+     * @return
+     */
+    private static Date now() {
+        return new Date();
     }
 
     /**
@@ -160,7 +170,7 @@ public class LogToDiskUtil {
         if (TextUtils.isEmpty(stackTrace)) {
             return;
         }
-        String log = StringUtil.safelyAppend("=======start crash======\n", stackTrace, "\n=======end======");
+        String log = StringUtil.safelyAppend("-------------crash start-------------\n", stackTrace, "\n-------------crash start-------------");
         onLog(log);
     }
 
@@ -173,10 +183,7 @@ public class LogToDiskUtil {
      * @param tr
      */
     public static void info(String tag, String msg, Throwable tr) {
-        String log = StringUtil.safelyAppend("=======start info======\n",
-                "tag:", tag,
-                "\nmsg:", msg,
-                "\nthrowable:", getThrowableFmt(tr), "\n=======   end   ======");
+        String log = format(tag, msg, tr, "-------------info start-------------", "-------------info end-------------");
         onLog(log);
     }
 
@@ -188,10 +195,7 @@ public class LogToDiskUtil {
      * @param tr
      */
     public static void debug(String tag, String msg, Throwable tr) {
-        String log = StringUtil.safelyAppend("=======debug info======\n",
-                "tag:", tag,
-                "\nmsg:", msg,
-                "\nthrowable:", getThrowableFmt(tr), "\n=======   end   ======");
+        String log = format(tag, msg, tr, "-------------debug start-------------", "-------------debug end-------------");
         onLog(log);
     }
 
@@ -203,11 +207,24 @@ public class LogToDiskUtil {
      * @param tr
      */
     public static void error(String tag, String msg, Throwable tr) {
-        String log = StringUtil.safelyAppend("=======start error======\n",
-                "tag:", tag,
-                "\nmsg:", msg,
-                "\nthrowable:", getThrowableFmt(tr), "\n=======   end   ======");
+        String log = format(tag, msg, tr, "-------------error start-------------", "-------------error end-------------");
         onLog(log);
+    }
+
+    /**
+     * 格式化日志
+     *
+     * @param tag
+     * @param msg
+     * @param tr
+     * @return
+     */
+    private static String format(String tag, String msg, Throwable tr, String startStr, String endStr) {
+        return StringUtil.safelyAppend(startStr, "\n",
+                "tag:", tag, "\n",
+                "msg:", msg, "\n",
+                "throwable:", getThrowableFmt(tr), "\n",
+                endStr, "\n");
     }
 
     /**

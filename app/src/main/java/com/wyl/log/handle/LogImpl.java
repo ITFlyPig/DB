@@ -103,18 +103,6 @@ public class LogImpl implements ILog {
         //  记录线程简单的信息
         params.put(LogConstant.LOG_THREAD, getThreadInfo());
 
-        try {
-            WULogUtils.d(TAG, "onEvent接收到日志：\n" + JsonUtils.toJSONString(params));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-
         // 尝试过滤日志
         if (tryFilter(params)) {
             WULogUtils.d(TAG, "日志被过滤");
